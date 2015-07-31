@@ -12,7 +12,7 @@
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="32dp"
+        android:layout_height="33dp"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="Interstellar"
         android:id="@+id/textView"
@@ -23,10 +23,11 @@
         android:layout_alignEnd="@+id/imageView"
         android:background="#7d000000"
         android:textColor="#fffffddb"
-        android:textAlignment="center"
+        android:gravity="center"
         android:singleLine="false"
         android:capitalize="characters"
-        android:editable="false" />
+        android:editable="false"
+        android:textAllCaps="true"/>
 
 
 </RelativeLayout>
