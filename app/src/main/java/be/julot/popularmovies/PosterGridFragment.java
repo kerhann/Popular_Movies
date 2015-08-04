@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,13 +17,17 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 
-/**
- * Created by Julot on 31/07/2015.
- */
+
 public class PosterGridFragment extends Fragment {
 
     public PosterGridFragment() {}
+
+    MoviePosterItem[] moviePosterItems = {
+            new MoviePosterItem("Test movie", "7.6", R.drawable.test),
+            new MoviePosterItem("Internetar", "2.4", R.drawable.test)
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -32,14 +37,21 @@ public class PosterGridFragment extends Fragment {
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+
+        ArrayAdapter<String> posterAdapter = new ArrayAdapter<String>(
+                getActivity(),
+                R.layout.movies_grid_item,
+                R.id.movies_grid_item_textview,
+                new ArrayList<String>());
+
+
+
         return rootView;
     }
 
     private void updatePosterGrid() {
-
         FetchPostersTask update = new FetchPostersTask();
         update.execute();
-
     }
 
     @Override
@@ -61,7 +73,7 @@ public class PosterGridFragment extends Fragment {
 
                 //Decision is not to hardcode parameters in order to keep flexibility
                 //if the app needs to propose additional parameters to users through settings.
-                final String TMDB_BASE_URL = "http://api.thememoviedb.org/3/discover/movie";
+                final String TMDB_BASE_URL = "https://api.themoviedb.org/3/discover/movie";
                 final String SORT_PARAM = "sort_by";
                 final String API_KEY_PARAM = "api_key";
 
@@ -87,8 +99,12 @@ public class PosterGridFragment extends Fragment {
                     return null;
                 }
                 reader = new BufferedReader(new InputStreamReader(streamFromTMDB));
+                String line;
 
-                //DEBUGGING => OPTIONAL TO-DO: append new line "\n" to each line of reader
+                while ((line = reader.readLine()) != null)
+                {
+                    buffer.append(line+"\n");
+                }
 
                 if (buffer.length() == 0) {
                     Log.v(LOG_TAG, "Buffer is empty");
@@ -98,9 +114,7 @@ public class PosterGridFragment extends Fragment {
                 moviesJsonStr = buffer.toString();
                 Log.v(LOG_TAG, moviesJsonStr);
 
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
+            }  catch (IOException e) {
                 e.printStackTrace();
             }
 
@@ -108,6 +122,8 @@ public class PosterGridFragment extends Fragment {
             return moviesJsonStr;
         }
 
-
     }
+
+
+
 }
