@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.GridView;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,6 +19,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 
 public class PosterGridFragment extends Fragment {
@@ -38,13 +40,10 @@ public class PosterGridFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        ArrayAdapter<String> posterAdapter = new ArrayAdapter<String>(
-                getActivity(),
-                R.layout.movies_grid_item,
-                R.id.movies_grid_item_textview,
-                new ArrayList<String>());
+        MoviePosterItemAdapter moviePosterAdapter = new MoviePosterItemAdapter(getActivity(), Arrays.asList(moviePosterItems));
 
-
+        GridView posterGrid = (GridView) rootView.findViewById(R.id.movie_grid);
+        posterGrid.setAdapter(moviePosterAdapter);
 
         return rootView;
     }
@@ -57,7 +56,7 @@ public class PosterGridFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        updatePosterGrid();
+        //updatePosterGrid();
     }
 
     public class FetchPostersTask extends AsyncTask<String, Void, String> {
