@@ -8,17 +8,19 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.GridView;
+import android.widget.Toast;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 
@@ -28,6 +30,12 @@ public class PosterGridFragment extends Fragment {
 
     MoviePosterItem[] moviePosterItems = {
             new MoviePosterItem("Test movie", "7.6", R.drawable.test),
+            new MoviePosterItem("Dude, where is my car?", "2.2", R.drawable.test),
+            new MoviePosterItem("Yoooo", "7.2", R.drawable.test),
+            new MoviePosterItem("Ulysse is here", "5.4", R.drawable.test),
+            new MoviePosterItem("Come on baby", "7.9", R.drawable.test),
+            new MoviePosterItem("Limit title to 30 chars", "5.3", R.drawable.test),
+            new MoviePosterItem("Doesn't he?", "9.1", R.drawable.test),
             new MoviePosterItem("Internetar", "2.4", R.drawable.test)
     };
 
@@ -56,14 +64,14 @@ public class PosterGridFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        //updatePosterGrid();
+        updatePosterGrid();
     }
 
-    public class FetchPostersTask extends AsyncTask<String, Void, String> {
+    public class FetchPostersTask extends AsyncTask<String, Void, String[]> {
 
         private final String LOG_TAG = FetchPostersTask.class.getSimpleName();
 
-        protected String doInBackground(String... params) {
+        protected String[] doInBackground(String... params) {
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
             String moviesJsonStr = null;
@@ -100,9 +108,8 @@ public class PosterGridFragment extends Fragment {
                 reader = new BufferedReader(new InputStreamReader(streamFromTMDB));
                 String line;
 
-                while ((line = reader.readLine()) != null)
-                {
-                    buffer.append(line+"\n");
+                while ((line = reader.readLine()) != null) {
+                    buffer.append(line + "\n");
                 }
 
                 if (buffer.length() == 0) {
@@ -113,13 +120,60 @@ public class PosterGridFragment extends Fragment {
                 moviesJsonStr = buffer.toString();
                 Log.v(LOG_TAG, moviesJsonStr);
 
-            }  catch (IOException e) {
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            } finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            String[] finalMoviesArray = new String[0];
+            try {
+                finalMoviesArray = getMoviesDataFromJson(moviesJsonStr);
+            } catch (JSONException e) {
                 e.printStackTrace();
             }
 
-
-            return moviesJsonStr;
+            return finalMoviesArray;
         }
+
+
+
+        private String[] getMoviesDataFromJson(String moviesJsonStr) throws JSONException {
+
+            JSONObject moviesJson = null;
+            moviesJson = new JSONObject(moviesJsonStr);
+            JSONArray resultsArray = moviesJson.getJSONArray("results");
+
+            String[] moviesResults = new String[20];
+
+            for(int i = 0; i < resultsArray.length(); i++) {
+                String title;
+                String averageVote;
+                String posterRelativeUrl;
+
+                title = resultsArray.getJSONObject(i).getString("original_title");
+                moviesResults[i] = title;
+            }
+
+            return moviesResults;
+        }
+
+        @Override
+        protected void onPostExecute(String[] strings) {
+            super.onPostExecute(strings);
+
+        }
+
 
     }
 
