@@ -10,14 +10,17 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
+import java.util.Collection;
 import java.util.List;
 
 public class MoviePosterItemAdapter extends ArrayAdapter<MoviePosterItem> {
 
     private final String LOG_TAG = MoviePosterItemAdapter.class.getSimpleName();
 
-    public MoviePosterItemAdapter(Activity context, List<MoviePosterItem> moviePosterItems) {
-        super(context, 0, moviePosterItems);
+    public MoviePosterItemAdapter(Activity context, Collection moviePosterItems) {
+        super(context, 0, (List<MoviePosterItem>) moviePosterItems);
     }
 
     @Override
@@ -30,11 +33,17 @@ public class MoviePosterItemAdapter extends ArrayAdapter<MoviePosterItem> {
         }
 
         ImageView posterImage = (ImageView) view.findViewById(R.id.posterImage);
-        posterImage.setImageResource(moviePosterItem.moviePoster);
+        //posterImage.setImageResource(moviePosterItem.moviePoster);
+        Picasso.with(getContext()).load(moviePosterItem.moviePoster)
+                .into(posterImage);
 
         TextView movieTitle = (TextView) view.findViewById(R.id.movie_title);
+        TextView averageVote = (TextView) view.findViewById(R.id.movie_average_vote);
         movieTitle.setText(moviePosterItem.movieTitle);
+        averageVote.setText(moviePosterItem.movieAverageVote);
 
         return view;
     }
+
+
 }

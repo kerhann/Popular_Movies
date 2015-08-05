@@ -9,7 +9,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridView;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,23 +20,23 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 
 public class PosterGridFragment extends Fragment {
 
+    private MoviePosterItemAdapter moviePosterAdapter;
+
     public PosterGridFragment() {}
 
-    MoviePosterItem[] moviePosterItems = {
-            new MoviePosterItem("Test movie", "7.6", R.drawable.test),
-            new MoviePosterItem("Dude, where is my car?", "2.2", R.drawable.test),
-            new MoviePosterItem("Yoooo", "7.2", R.drawable.test),
-            new MoviePosterItem("Ulysse is here", "5.4", R.drawable.test),
-            new MoviePosterItem("Come on baby", "7.9", R.drawable.test),
-            new MoviePosterItem("Limit title to 30 chars", "5.3", R.drawable.test),
-            new MoviePosterItem("Doesn't he?", "9.1", R.drawable.test),
-            new MoviePosterItem("Internetar", "2.4", R.drawable.test)
-    };
+    MoviePosterItem[] moviePosterItems = {};
+
+
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -46,12 +45,16 @@ public class PosterGridFragment extends Fragment {
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        View rootView = inflater.inflate(R.layout.poster_grid_fragment, container, false);
 
-        MoviePosterItemAdapter moviePosterAdapter = new MoviePosterItemAdapter(getActivity(), Arrays.asList(moviePosterItems));
+        Collection c = new ArrayList(Arrays.asList(moviePosterItems));
+
+        moviePosterAdapter = new MoviePosterItemAdapter(getActivity(), c);
 
         GridView posterGrid = (GridView) rootView.findViewById(R.id.movie_grid);
         posterGrid.setAdapter(moviePosterAdapter);
+
+        //moviePosterAdapter.clear();
 
         return rootView;
     }
@@ -67,11 +70,11 @@ public class PosterGridFragment extends Fragment {
         updatePosterGrid();
     }
 
-    public class FetchPostersTask extends AsyncTask<String, Void, String[]> {
+    public class FetchPostersTask extends AsyncTask<String, Void, List<MoviePosterItem>> {
 
         private final String LOG_TAG = FetchPostersTask.class.getSimpleName();
 
-        protected String[] doInBackground(String... params) {
+        protected List<MoviePosterItem> doInBackground(String... params) {
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
             String moviesJsonStr = null;
@@ -93,7 +96,7 @@ public class PosterGridFragment extends Fragment {
                         .build();
 
                 URL finalUrl = new URL(finalUri.toString());
-                Log.v(LOG_TAG, String.valueOf(finalUrl));
+                //Log.v(LOG_TAG, String.valueOf(finalUrl));
 
                 urlConnection = (HttpURLConnection) finalUrl.openConnection();
                 urlConnection.setRequestMethod("GET");
@@ -118,7 +121,7 @@ public class PosterGridFragment extends Fragment {
                 }
 
                 moviesJsonStr = buffer.toString();
-                Log.v(LOG_TAG, moviesJsonStr);
+                //Log.v(LOG_TAG, moviesJsonStr);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -136,44 +139,43 @@ public class PosterGridFragment extends Fragment {
                 }
             }
 
-            String[] finalMoviesArray = new String[0];
+            MoviePosterItem[] finalMoviesDataForGrid = new MoviePosterItem[0];
             try {
-                finalMoviesArray = getMoviesDataFromJson(moviesJsonStr);
+                finalMoviesDataForGrid = getMoviesDataFromJson(moviesJsonStr);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
 
-            return finalMoviesArray;
+            return Arrays.asList(finalMoviesDataForGrid);
         }
 
 
 
-        private String[] getMoviesDataFromJson(String moviesJsonStr) throws JSONException {
+        private MoviePosterItem[] getMoviesDataFromJson(String moviesJsonStr) throws JSONException {
 
             JSONObject moviesJson = null;
             moviesJson = new JSONObject(moviesJsonStr);
             JSONArray resultsArray = moviesJson.getJSONArray("results");
 
-            String[] moviesResults = new String[20];
+            MoviePosterItem[] moviesResults = new MoviePosterItem[resultsArray.length()];
 
             for(int i = 0; i < resultsArray.length(); i++) {
-                String title;
-                String averageVote;
-                String posterRelativeUrl;
-
-                title = resultsArray.getJSONObject(i).getString("original_title");
-                moviesResults[i] = title;
+                String title = resultsArray.getJSONObject(i).getString("original_title");
+                String averageVote = resultsArray.getJSONObject(i).getString("vote_average");
+                String posterRelativeUrl = "http://image.tmdb.org/t/p/w185"+resultsArray.getJSONObject(i).getString("poster_path");
+                Log.v(LOG_TAG, posterRelativeUrl);
+                moviesResults[i] = new MoviePosterItem(title, averageVote, posterRelativeUrl);
             }
 
             return moviesResults;
         }
 
         @Override
-        protected void onPostExecute(String[] strings) {
-            super.onPostExecute(strings);
-
+        protected void onPostExecute(List<MoviePosterItem> moviePosters) {
+            super.onPostExecute(moviePosters);
+            moviePosterAdapter.clear();
+            moviePosterAdapter.addAll(moviePosters);
         }
-
 
     }
 
