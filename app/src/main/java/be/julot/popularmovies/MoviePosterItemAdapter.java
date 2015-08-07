@@ -10,7 +10,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.util.Collection;
 import java.util.List;
@@ -34,8 +35,13 @@ public class MoviePosterItemAdapter extends ArrayAdapter<MoviePosterItem> {
 
         ImageView posterImage = (ImageView) view.findViewById(R.id.posterImage);
         //posterImage.setImageResource(moviePosterItem.moviePoster);
-        Picasso.with(getContext()).load(moviePosterItem.moviePoster)
-                .into(posterImage);
+        ImageLoader imageLoader = ImageLoader.getInstance();
+
+        DisplayImageOptions options = new DisplayImageOptions.Builder()
+                .showImageOnLoading(R.drawable.star)
+                .cacheInMemory(true)
+                .build();
+        imageLoader.displayImage((moviePosterItem.moviePoster), posterImage, options);
 
         TextView movieTitle = (TextView) view.findViewById(R.id.movie_title);
         TextView averageVote = (TextView) view.findViewById(R.id.movie_average_vote);
