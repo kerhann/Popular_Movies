@@ -1,0 +1,16 @@
+<resources>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Strings related to Settings -->
+
+    <string name="pref_title_sortby">Sort the movie grid by</string>
+    <string name="pref_key_default_sortby">popularity.desc</string>
+    <string-array name="pref_sortby_list_titles">
+        <item>movie popularity</item>
+        <item>average vote score</item>
+    </string-array>
+    <string-array name="pref_sortby_list_values">
+        <item>popularity.desc</item>
+        <item>vote_average.desc</item>
+    </string-array>
+</resources>

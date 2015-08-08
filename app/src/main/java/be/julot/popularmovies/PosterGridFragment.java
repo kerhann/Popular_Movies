@@ -1,11 +1,18 @@
 package be.julot.popularmovies;
 
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridView;
@@ -41,7 +48,7 @@ public class PosterGridFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
+        //setHasOptionsMenu(true);
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -61,7 +68,9 @@ public class PosterGridFragment extends Fragment {
 
     private void updatePosterGrid() {
         FetchPostersTask update = new FetchPostersTask();
-        update.execute();
+        SharedPreferences userPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String sortby_pref = userPrefs.getString(getString(R.string.pref_key_sortby), getString(R.string.pref_key_default_sortby));
+        update.execute(sortby_pref);
     }
 
     @Override
@@ -73,6 +82,16 @@ public class PosterGridFragment extends Fragment {
     public class FetchPostersTask extends AsyncTask<String, Void, List<MoviePosterItem>> {
 
         private final String LOG_TAG = FetchPostersTask.class.getSimpleName();
+
+        private ProgressDialog dialog = new ProgressDialog(getActivity());
+
+        /** progress dialog to show user that the backup is processing. */
+        /** application context. */
+        @Override
+        protected void onPreExecute() {
+            this.dialog.setMessage(getResources().getString(R.string.loading_message));
+            this.dialog.show();
+        }
 
         protected List<MoviePosterItem> doInBackground(String... params) {
             HttpURLConnection urlConnection = null;
@@ -91,7 +110,7 @@ public class PosterGridFragment extends Fragment {
 
                 Uri finalUri = Uri.parse(TMDB_BASE_URL)
                         .buildUpon()
-                        .appendQueryParameter(SORT_PARAM, "popularity.desc")
+                        .appendQueryParameter(SORT_PARAM, params[0])
                         .appendQueryParameter(API_KEY_PARAM, API_KEY)
                         .build();
 
@@ -173,6 +192,9 @@ public class PosterGridFragment extends Fragment {
         @Override
         protected void onPostExecute(List<MoviePosterItem> moviePosters) {
             super.onPostExecute(moviePosters);
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
             moviePosterAdapter.clear();
             moviePosterAdapter.addAll(moviePosters);
         }

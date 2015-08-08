@@ -3,6 +3,7 @@ package be.julot.popularmovies;
 
 import android.app.Activity;
 import android.content.Context;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import android.widget.TextView;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.squareup.picasso.Picasso;
 
 import java.util.Collection;
 import java.util.List;
@@ -33,19 +35,22 @@ public class MoviePosterItemAdapter extends ArrayAdapter<MoviePosterItem> {
             view = LayoutInflater.from(getContext()).inflate(R.layout.movies_grid_item, parent, false);
         }
 
-        ImageView posterImage = (ImageView) view.findViewById(R.id.posterImage);
-        //posterImage.setImageResource(moviePosterItem.moviePoster);
-        ImageLoader imageLoader = ImageLoader.getInstance();
+        ImageView posterImageView = (ImageView) view.findViewById(R.id.posterImage);
 
-        DisplayImageOptions options = new DisplayImageOptions.Builder()
-                .showImageOnLoading(R.drawable.star)
-                .cacheInMemory(true)
-                .build();
-        imageLoader.displayImage((moviePosterItem.moviePoster), posterImage, options);
+        Picasso.with(getContext()).load(moviePosterItem.moviePoster).into(posterImageView);
+
+        String title = moviePosterItem.movieTitle;
 
         TextView movieTitle = (TextView) view.findViewById(R.id.movie_title);
         TextView averageVote = (TextView) view.findViewById(R.id.movie_average_vote);
-        movieTitle.setText(moviePosterItem.movieTitle);
+
+        //Truncate title if too long
+        if (title.length() > 35)
+        {
+            title = title.substring(0,35)+"...";
+        }
+
+        movieTitle.setText(title);
         averageVote.setText(moviePosterItem.movieAverageVote);
 
         return view;
