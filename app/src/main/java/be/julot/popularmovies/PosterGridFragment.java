@@ -36,6 +36,8 @@ import java.util.List;
 
 public class PosterGridFragment extends Fragment {
 
+    private final String LOG_TAG = MoviePosterItemAdapter.class.getSimpleName();
+
     private MoviePosterItemAdapter moviePosterAdapter;
 
     public PosterGridFragment() {}
@@ -54,7 +56,7 @@ public class PosterGridFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.poster_grid_fragment, container, false);
 
-        Collection c = new ArrayList(Arrays.asList(moviePosterItems));
+        ArrayList c = new ArrayList(Arrays.asList(moviePosterItems));
 
         moviePosterAdapter = new MoviePosterItemAdapter(getActivity(), c);
 
@@ -115,7 +117,7 @@ public class PosterGridFragment extends Fragment {
                         .build();
 
                 URL finalUrl = new URL(finalUri.toString());
-                //Log.v(LOG_TAG, String.valueOf(finalUrl));
+                Log.v(LOG_TAG, String.valueOf(finalUrl));
 
                 urlConnection = (HttpURLConnection) finalUrl.openConnection();
                 urlConnection.setRequestMethod("GET");

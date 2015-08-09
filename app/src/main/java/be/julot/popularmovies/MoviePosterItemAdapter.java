@@ -15,6 +15,7 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -22,8 +23,8 @@ public class MoviePosterItemAdapter extends ArrayAdapter<MoviePosterItem> {
 
     private final String LOG_TAG = MoviePosterItemAdapter.class.getSimpleName();
 
-    public MoviePosterItemAdapter(Activity context, Collection moviePosterItems) {
-        super(context, 0, (List<MoviePosterItem>) moviePosterItems);
+    public MoviePosterItemAdapter(Activity context, List<MoviePosterItem> moviePosterItems) {
+        super(context, 0, moviePosterItems);
     }
 
     @Override
@@ -35,7 +36,7 @@ public class MoviePosterItemAdapter extends ArrayAdapter<MoviePosterItem> {
             view = LayoutInflater.from(getContext()).inflate(R.layout.movies_grid_item, parent, false);
         }
 
-        ImageView posterImageView = (ImageView) view.findViewById(R.id.posterImage);
+        ImageView posterImageView = (ImageView) view.findViewById(R.id.posterImageView);
 
         Picasso.with(getContext()).load(moviePosterItem.moviePoster).into(posterImageView);
 
