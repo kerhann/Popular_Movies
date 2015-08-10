@@ -15,7 +15,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,6 +27,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -63,7 +66,20 @@ public class PosterGridFragment extends Fragment {
         GridView posterGrid = (GridView) rootView.findViewById(R.id.movie_grid);
         posterGrid.setAdapter(moviePosterAdapter);
 
-        //moviePosterAdapter.clear();
+        posterGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+                                              public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                                  MoviePosterItem test = moviePosterAdapter.getItem(position);
+
+                                                  //Toast.makeText(getActivity(), test.movieTitle, Toast.LENGTH_SHORT).show();
+                                                  //Log.v("launching intent", test);
+                                                  Intent detailIntent = new Intent(getActivity(), MovieDetailActivity.class)
+                                                          .putExtra(Intent.EXTRA_TEXT, (Serializable) test);
+                                                  startActivity(detailIntent);
+                                              }
+
+                                          }
+                                        );
 
         return rootView;
     }

@@ -1,7 +1,9 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:fresco="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:focusable="false"
+    android:focusableInTouchMode="false">
 
     <ImageView
         android:layout_width="fill_parent"
@@ -9,7 +11,9 @@
         android:id="@+id/posterImageView"
         android:src="@drawable/blank"
         android:scaleType="fitCenter"
-        android:adjustViewBounds="true" />
+        android:adjustViewBounds="true"
+        android:focusable="false"
+        android:focusableInTouchMode="false" />
 
     <TextView
         android:layout_width="match_parent"
@@ -28,7 +32,9 @@
         android:maxLines="2"
         android:layout_alignBottom="@+id/posterImageView"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:focusable="false"
+        android:focusableInTouchMode="false" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -48,7 +54,9 @@
         style="@style/Base.TextAppearance.AppCompat.Caption"
         android:fontFamily="sans-serif-condensed"
         android:maxLines="2"
-        android:padding="2dp" />
+        android:padding="2dp"
+        android:focusable="false"
+        android:focusableInTouchMode="false" />
 
     <ImageView
         android:layout_width="wrap_content"
@@ -57,7 +65,9 @@
         android:layout_alignParentTop="true"
         android:layout_toLeftOf="@+id/movie_average_vote"
         android:layout_toStartOf="@+id/movie_average_vote"
-        android:src="@drawable/star" />
+        android:src="@drawable/star"
+        android:focusable="false"
+        android:focusableInTouchMode="false" />
 
 
 </RelativeLayout>

@@ -23,6 +23,14 @@
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings" >
         </activity>
+        <activity
+            android:name=".MovieDetailActivity"
+            android:label="@string/title_activity_movie_detail"
+            android:parentActivityName=".MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="be.julot.popularmovies.MainActivity" />
+        </activity>
     </application>
 
 </manifest>
