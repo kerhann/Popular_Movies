@@ -10,9 +10,6 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -27,63 +24,51 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 
 public class PosterGridFragment extends Fragment {
-
-    private final String LOG_TAG = MoviePosterItemAdapter.class.getSimpleName();
 
     private MoviePosterItemAdapter moviePosterAdapter;
 
     public PosterGridFragment() {}
 
-    MoviePosterItem[] moviePosterItems = {};
-
-
-
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setHasOptionsMenu(true);
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.poster_grid_fragment, container, false);
 
-        ArrayList c = new ArrayList(Arrays.asList(moviePosterItems));
+        List<MoviePosterItem> c = new ArrayList<>();
 
         moviePosterAdapter = new MoviePosterItemAdapter(getActivity(), c);
 
         GridView posterGrid = (GridView) rootView.findViewById(R.id.movie_grid);
         posterGrid.setAdapter(moviePosterAdapter);
-
         posterGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
                                               public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                                  MoviePosterItem test = moviePosterAdapter.getItem(position);
+                                                  MoviePosterItem itemToPutExtra = moviePosterAdapter.getItem(position);
 
                                                   //Toast.makeText(getActivity(), test.movieTitle, Toast.LENGTH_SHORT).show();
                                                   //Log.v("launching intent", test);
                                                   Intent detailIntent = new Intent(getActivity(), MovieDetailActivity.class)
-                                                          .putExtra(Intent.EXTRA_TEXT, (Serializable) test);
+                                                          .putExtra(Intent.EXTRA_TEXT, itemToPutExtra);
                                                   startActivity(detailIntent);
                                               }
 
                                           }
-                                        );
+        );
 
         return rootView;
     }
@@ -144,16 +129,16 @@ public class PosterGridFragment extends Fragment {
                 urlConnection.connect();
 
                 InputStream streamFromTMDB = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
+                StringBuilder buffer = new StringBuilder();
                 if (streamFromTMDB == null) {
-                    Log.v(LOG_TAG, "No stream from TMDB");
+                    Toast.makeText(getActivity(), "Sorry, the server does not seem to send any data.", Toast.LENGTH_LONG).show();
                     return null;
                 }
                 reader = new BufferedReader(new InputStreamReader(streamFromTMDB));
                 String line;
 
                 while ((line = reader.readLine()) != null) {
-                    buffer.append(line + "\n");
+                    buffer.append(line).append("\n");
                 }
 
                 if (buffer.length() == 0) {
@@ -162,7 +147,6 @@ public class PosterGridFragment extends Fragment {
                 }
 
                 moviesJsonStr = buffer.toString();
-                //Log.v(LOG_TAG, moviesJsonStr);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -180,25 +164,26 @@ public class PosterGridFragment extends Fragment {
                 }
             }
 
-            MoviePosterItem[] finalMoviesDataForGrid = new MoviePosterItem[0];
+            List<MoviePosterItem> finalMoviesDataForGrid = new ArrayList<>();
+
             try {
                 finalMoviesDataForGrid = getMoviesDataFromJson(moviesJsonStr);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
 
-            return Arrays.asList(finalMoviesDataForGrid);
+            return finalMoviesDataForGrid;
         }
 
 
 
-        private MoviePosterItem[] getMoviesDataFromJson(String moviesJsonStr) throws JSONException {
+        private List<MoviePosterItem> getMoviesDataFromJson(String moviesJsonStr) throws JSONException {
 
-            JSONObject moviesJson = null;
+            JSONObject moviesJson;
             moviesJson = new JSONObject(moviesJsonStr);
             JSONArray resultsArray = moviesJson.getJSONArray("results");
 
-            MoviePosterItem[] moviesResults = new MoviePosterItem[resultsArray.length()];
+            List<MoviePosterItem> moviesResults = new ArrayList<>();
 
             for(int i = 0; i < resultsArray.length(); i++) {
                 String title = resultsArray.getJSONObject(i).getString("original_title");
@@ -206,12 +191,12 @@ public class PosterGridFragment extends Fragment {
 
                 int year = 0;
                 String releaseDate = resultsArray.getJSONObject(i).getString("release_date");
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
                 try {
                     Date movieDate = dateFormat.parse(releaseDate);
                     Calendar calendar = Calendar.getInstance();
                     calendar.setTime(movieDate);
-                    year = calendar.get(calendar.YEAR);
+                    year = calendar.get(Calendar.YEAR);
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
@@ -220,7 +205,7 @@ public class PosterGridFragment extends Fragment {
                 int voteCount = resultsArray.getJSONObject(i).getInt("vote_count");
                 double rating = resultsArray.getJSONObject(i).getDouble("vote_average");
 
-                moviesResults[i] = new MoviePosterItem(title, posterRelativeUrl, year, overview, voteCount, (float) rating);
+                moviesResults.add(i, new MoviePosterItem(title, posterRelativeUrl, year, overview, voteCount, (float) rating));
             }
 
             return moviesResults;

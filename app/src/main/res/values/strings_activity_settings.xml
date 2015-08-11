@@ -3,11 +3,11 @@
 
     <!-- Strings related to Settings -->
 
-    <string name="pref_title_sortby">Sort the movie grid by</string>
+    <string name="pref_title_sortby">Fetch movies with the following criteria</string>
     <string name="pref_key_default_sortby">popularity.desc</string>
     <string-array name="pref_sortby_list_titles">
-        <item>movie popularity</item>
-        <item>average vote score</item>
+        <item>Movie popularity</item>
+        <item>Average vote score</item>
     </string-array>
     <string-array name="pref_sortby_list_values">
         <item>popularity.desc</item>
