@@ -14,13 +14,20 @@ public class MoviePosterItem implements Serializable {
     //new ArrayList<MoviePosterItem> ;
 
     String movieTitle;
-    String movieAverageVote;
     String moviePoster;
+    String movieOverview;
+    int movieYear;
+    int movieVoteCount;
+    float movieRating;
 
-    public MoviePosterItem(String mTitle, String mAverageVote, String mPoster) {
+    public MoviePosterItem(String mTitle, String mPoster, int mYear,
+                           String mOverview, int mVoteCount, float mRating) {
         this.movieTitle = mTitle;
-        this.movieAverageVote = mAverageVote;
         this.moviePoster = mPoster;
+        this.movieOverview = mOverview;
+        this.movieYear = mYear;
+        this.movieVoteCount = mVoteCount;
+        this.movieRating = mRating;
     }
 
 

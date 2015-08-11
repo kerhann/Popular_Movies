@@ -52,7 +52,7 @@ public class MoviePosterItemAdapter extends ArrayAdapter<MoviePosterItem> {
         }
 
         movieTitle.setText(title);
-        averageVote.setText(moviePosterItem.movieAverageVote);
+        averageVote.setText(Float.toString(moviePosterItem.movieRating));
 
         return view;
     }

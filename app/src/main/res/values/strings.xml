@@ -3,7 +3,11 @@
     <string name="action_settings">Settings</string>
     <string name="pref_key_sortby">sort_by_setting</string>
 
-    <string name="loading_message">Loading movies...</string>
+    <string name="loading_message">Loading movies…</string>
     <string name="title_activity_movie_detail">MovieDetailActivity</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="titleTextView">-</string>
+    <string name="vote_count">-</string>
+    <string name="overviewTitle">Overview</string>
+    <string name="overviewDetail">No overview available</string>
+    <string name="movieYearDetail">-</string>
 </resources>

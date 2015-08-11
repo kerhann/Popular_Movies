@@ -30,9 +30,13 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -198,10 +202,25 @@ public class PosterGridFragment extends Fragment {
 
             for(int i = 0; i < resultsArray.length(); i++) {
                 String title = resultsArray.getJSONObject(i).getString("original_title");
-                String averageVote = resultsArray.getJSONObject(i).getString("vote_average");
                 String posterRelativeUrl = "http://image.tmdb.org/t/p/w185"+resultsArray.getJSONObject(i).getString("poster_path");
-                Log.v(LOG_TAG, posterRelativeUrl);
-                moviesResults[i] = new MoviePosterItem(title, averageVote, posterRelativeUrl);
+
+                int year = 0;
+                String releaseDate = resultsArray.getJSONObject(i).getString("release_date");
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                try {
+                    Date movieDate = dateFormat.parse(releaseDate);
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(movieDate);
+                    year = calendar.get(calendar.YEAR);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+                String overview = resultsArray.getJSONObject(i).getString("overview");
+                int voteCount = resultsArray.getJSONObject(i).getInt("vote_count");
+                double rating = resultsArray.getJSONObject(i).getDouble("vote_average");
+
+                moviesResults[i] = new MoviePosterItem(title, posterRelativeUrl, year, overview, voteCount, (float) rating);
             }
 
             return moviesResults;
