@@ -2,6 +2,7 @@ package be.julot.popularmovies;
 
 
 import android.app.Activity;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +23,7 @@ public class MoviePosterItemAdapter extends ArrayAdapter<MoviePosterItem> {
     @Override
     public View getView(int position, View view, ViewGroup parent){
 
-        MoviePosterItem moviePosterItem;
+        final MoviePosterItem moviePosterItem;
         moviePosterItem = getItem(position);
 
         if (view == null) {
@@ -46,6 +47,35 @@ public class MoviePosterItemAdapter extends ArrayAdapter<MoviePosterItem> {
 
         movieTitle.setText(title);
         averageVote.setText(Float.toString(moviePosterItem.movieRating));
+
+        view.setOnClickListener(new View.OnClickListener() {
+
+                                    @Override
+                                    public void onClick(View v) {
+                                        Intent detailIntent = new Intent(getContext(), MovieDetailActivity.class)
+                                                .putExtra(Intent.EXTRA_TEXT, moviePosterItem);
+                                        getContext().startActivity(detailIntent);
+                                    }
+
+                                }
+        );
+
+        //Necessary for the movie title TextView to also react to a click (not only the poster).
+        //Though, I don't understand why the above lines of view.setOnClickListener are not
+        //including the movie title TextView as a component reacting to the click as well.
+        //Why does it need to be defined separately?
+        movieTitle.setOnClickListener(new View.OnClickListener() {
+
+                                    @Override
+                                    public void onClick(View v) {
+                                        Intent detailIntent = new Intent(getContext(), MovieDetailActivity.class)
+                                                .putExtra(Intent.EXTRA_TEXT, moviePosterItem);
+                                        getContext().startActivity(detailIntent);
+                                    }
+
+                                }
+        );
+
 
         return view;
     }

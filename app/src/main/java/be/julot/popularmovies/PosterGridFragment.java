@@ -1,7 +1,6 @@
 package be.julot.popularmovies;
 
 import android.app.ProgressDialog;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -12,7 +11,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.Toast;
 
@@ -38,6 +36,8 @@ import java.util.Locale;
 public class PosterGridFragment extends Fragment {
 
     private MoviePosterItemAdapter moviePosterAdapter;
+    //Insert API key here
+    public final String API_KEY = "...";
 
     public PosterGridFragment() {}
 
@@ -55,20 +55,6 @@ public class PosterGridFragment extends Fragment {
 
         GridView posterGrid = (GridView) rootView.findViewById(R.id.movie_grid);
         posterGrid.setAdapter(moviePosterAdapter);
-        posterGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-                                              public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                                  MoviePosterItem itemToPutExtra = moviePosterAdapter.getItem(position);
-
-                                                  //Toast.makeText(getActivity(), test.movieTitle, Toast.LENGTH_SHORT).show();
-                                                  //Log.v("launching intent", test);
-                                                  Intent detailIntent = new Intent(getActivity(), MovieDetailActivity.class)
-                                                          .putExtra(Intent.EXTRA_TEXT, itemToPutExtra);
-                                                  startActivity(detailIntent);
-                                              }
-
-                                          }
-        );
 
         return rootView;
     }
@@ -112,8 +98,6 @@ public class PosterGridFragment extends Fragment {
                 final String TMDB_BASE_URL = "https://api.themoviedb.org/3/discover/movie";
                 final String SORT_PARAM = "sort_by";
                 final String API_KEY_PARAM = "api_key";
-
-                final String API_KEY = "d02afd0919d8034eee26567d22343d36";
 
                 Uri finalUri = Uri.parse(TMDB_BASE_URL)
                         .buildUpon()
@@ -189,6 +173,8 @@ public class PosterGridFragment extends Fragment {
                 String title = resultsArray.getJSONObject(i).getString("original_title");
                 String posterRelativeUrl = "http://image.tmdb.org/t/p/w185"+resultsArray.getJSONObject(i).getString("poster_path");
 
+                //Just to play a bit with dates and calendar, I am trying to retrieve the year only,
+                //but avoiding to use a "substring" method.
                 int year = 0;
                 String releaseDate = resultsArray.getJSONObject(i).getString("release_date");
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);

@@ -12,12 +12,6 @@
         android:adjustViewBounds="true"
         android:contentDescription="@string/posterImageInGridContentDesc" />
 
-    <!--
-    I don't understand why, but determining text attributes of the below TextViews
-    (e.g. textColor, gravity, etc.) in styles.xml does not work. I will investigate...
-    Though, determining attributes like the background and height in styles.xml works well.
-    -->
-
     <TextView
         style="@style/TextInPosterGrid"
         android:textAppearance="@style/TextAppearance.AppCompat.Caption"
