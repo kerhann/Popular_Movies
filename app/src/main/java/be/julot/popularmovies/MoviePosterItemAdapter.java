@@ -53,7 +53,7 @@ public class MoviePosterItemAdapter extends ArrayAdapter<MoviePosterItem> {
                                     @Override
                                     public void onClick(View v) {
                                         Intent detailIntent = new Intent(getContext(), MovieDetailActivity.class)
-                                                .putExtra(Intent.EXTRA_TEXT, moviePosterItem);
+                                                .putParcelableArrayListExtra(Intent.EXTRA_TEXT, moviePosterItem);
                                         getContext().startActivity(detailIntent);
                                     }
 
@@ -69,7 +69,7 @@ public class MoviePosterItemAdapter extends ArrayAdapter<MoviePosterItem> {
                                     @Override
                                     public void onClick(View v) {
                                         Intent detailIntent = new Intent(getContext(), MovieDetailActivity.class)
-                                                .putExtra(Intent.EXTRA_TEXT, moviePosterItem);
+                                                .putParcelableArrayListExtra(Intent.EXTRA_TEXT, moviePosterItem);
                                         getContext().startActivity(detailIntent);
                                     }
 

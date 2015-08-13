@@ -7,7 +7,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,7 +28,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 
@@ -37,24 +35,44 @@ public class PosterGridFragment extends Fragment {
 
     private MoviePosterItemAdapter moviePosterAdapter;
     //Insert API key here
-    public final String API_KEY = "...";
+    public final String API_KEY = "d02afd0919d8034eee26567d22343d36";
+    private ArrayList<MoviePosterItem> moviePosterItems = new ArrayList<>();
+
+    //I chose to define a boolean to know if update of the grid is necessary. In doubt, it is "yes".
+    //Other factors may in the future also change this boolean, such as the fact that the grid
+    //has not been refreshed for x hours, etc.
+    private Boolean updateNecessary = true;
 
     public PosterGridFragment() {}
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null && savedInstanceState.containsKey("moviePosterItems")) {
+            moviePosterItems = savedInstanceState.getParcelableArrayList("moviePosterItems");
+            updateNecessary = false;
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle byeState) {
+        byeState.putParcelableArrayList("moviePosterItems", moviePosterItems);
+        super.onSaveInstanceState(byeState);
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.poster_grid_fragment, container, false);
 
-        List<MoviePosterItem> c = new ArrayList<>();
+        //List<MoviePosterItem> c = new ArrayList<>();
 
-        moviePosterAdapter = new MoviePosterItemAdapter(getActivity(), c);
+        moviePosterAdapter = new MoviePosterItemAdapter(getActivity(), moviePosterItems);
 
         GridView posterGrid = (GridView) rootView.findViewById(R.id.movie_grid);
         posterGrid.setAdapter(moviePosterAdapter);
+
+        if(updateNecessary) {
+            updatePosterGrid();
+        }
 
         return rootView;
     }
@@ -66,15 +84,10 @@ public class PosterGridFragment extends Fragment {
         update.execute(sortby_pref);
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        updatePosterGrid();
-    }
+    public class FetchPostersTask extends AsyncTask<String, Void, ArrayList<MoviePosterItem>> {
 
-    public class FetchPostersTask extends AsyncTask<String, Void, List<MoviePosterItem>> {
-
-        private final String LOG_TAG = FetchPostersTask.class.getSimpleName();
+        //private final String LOG_TAG = FetchPostersTask.class.getSimpleName();
+        private String errorMsg;
 
         private ProgressDialog dialog = new ProgressDialog(getActivity());
 
@@ -86,7 +99,7 @@ public class PosterGridFragment extends Fragment {
             this.dialog.show();
         }
 
-        protected List<MoviePosterItem> doInBackground(String... params) {
+        protected ArrayList<MoviePosterItem> doInBackground(String... params) {
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
             String moviesJsonStr = null;
@@ -106,7 +119,6 @@ public class PosterGridFragment extends Fragment {
                         .build();
 
                 URL finalUrl = new URL(finalUri.toString());
-                Log.v(LOG_TAG, String.valueOf(finalUrl));
 
                 urlConnection = (HttpURLConnection) finalUrl.openConnection();
                 urlConnection.setRequestMethod("GET");
@@ -115,7 +127,7 @@ public class PosterGridFragment extends Fragment {
                 InputStream streamFromTMDB = urlConnection.getInputStream();
                 StringBuilder buffer = new StringBuilder();
                 if (streamFromTMDB == null) {
-                    Toast.makeText(getActivity(), "Sorry, the server does not seem to send any data.", Toast.LENGTH_LONG).show();
+                    errorMsg = "No data was received fom the server. Try again later.";
                     return null;
                 }
                 reader = new BufferedReader(new InputStreamReader(streamFromTMDB));
@@ -126,7 +138,7 @@ public class PosterGridFragment extends Fragment {
                 }
 
                 if (buffer.length() == 0) {
-                    Log.v(LOG_TAG, "Buffer is empty");
+                    errorMsg = "Buffer is empty";
                     return null;
                 }
 
@@ -134,6 +146,7 @@ public class PosterGridFragment extends Fragment {
 
             } catch (IOException e) {
                 e.printStackTrace();
+                errorMsg = getString(R.string.connection_error);
                 return null;
             } finally {
                 if (urlConnection != null) {
@@ -144,11 +157,12 @@ public class PosterGridFragment extends Fragment {
                         reader.close();
                     } catch (IOException e) {
                         e.printStackTrace();
+                        errorMsg = "Reader could not be closed.";
                     }
                 }
             }
 
-            List<MoviePosterItem> finalMoviesDataForGrid = new ArrayList<>();
+            ArrayList<MoviePosterItem> finalMoviesDataForGrid = new ArrayList<>();
 
             try {
                 finalMoviesDataForGrid = getMoviesDataFromJson(moviesJsonStr);
@@ -161,13 +175,13 @@ public class PosterGridFragment extends Fragment {
 
 
 
-        private List<MoviePosterItem> getMoviesDataFromJson(String moviesJsonStr) throws JSONException {
+        private ArrayList<MoviePosterItem> getMoviesDataFromJson(String moviesJsonStr) throws JSONException {
 
             JSONObject moviesJson;
             moviesJson = new JSONObject(moviesJsonStr);
             JSONArray resultsArray = moviesJson.getJSONArray("results");
 
-            List<MoviePosterItem> moviesResults = new ArrayList<>();
+            ArrayList<MoviePosterItem> moviesResults = new ArrayList<>();
 
             for(int i = 0; i < resultsArray.length(); i++) {
                 String title = resultsArray.getJSONObject(i).getString("original_title");
@@ -198,13 +212,19 @@ public class PosterGridFragment extends Fragment {
         }
 
         @Override
-        protected void onPostExecute(List<MoviePosterItem> moviePosters) {
+        protected void onPostExecute(ArrayList<MoviePosterItem> moviePosters) {
             super.onPostExecute(moviePosters);
             if (dialog.isShowing()) {
                 dialog.dismiss();
             }
-            moviePosterAdapter.clear();
-            moviePosterAdapter.addAll(moviePosters);
+            if (moviePosters != null) {
+                moviePosterAdapter.clear();
+                moviePosterAdapter.addAll(moviePosters);
+                moviePosterItems = (ArrayList<MoviePosterItem>) moviePosters;
+            }
+            else {
+                Toast.makeText(getActivity(), errorMsg, Toast.LENGTH_LONG).show();
+            }
         }
 
     }
