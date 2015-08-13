@@ -35,7 +35,7 @@ public class PosterGridFragment extends Fragment {
 
     private MoviePosterItemAdapter moviePosterAdapter;
     //Insert API key here
-    public final String API_KEY = "d02afd0919d8034eee26567d22343d36";
+    public final String API_KEY = "...";
     private ArrayList<MoviePosterItem> moviePosterItems = new ArrayList<>();
 
     //I chose to define a boolean to know if update of the grid is necessary. In doubt, it is "yes".
@@ -70,6 +70,10 @@ public class PosterGridFragment extends Fragment {
         GridView posterGrid = (GridView) rootView.findViewById(R.id.movie_grid);
         posterGrid.setAdapter(moviePosterAdapter);
 
+        //I have moved the following lines from the onStart() method to here. Within the onStart()
+        //method, they were working great when screen was rotated, but not when the activity
+        // was stopped but not destroyed (e.g. by pushing home button or launching another app),
+        // and then restarted.
         if(updateNecessary) {
             updatePosterGrid();
         }
@@ -220,7 +224,7 @@ public class PosterGridFragment extends Fragment {
             if (moviePosters != null) {
                 moviePosterAdapter.clear();
                 moviePosterAdapter.addAll(moviePosters);
-                moviePosterItems = (ArrayList<MoviePosterItem>) moviePosters;
+                moviePosterItems = moviePosters;
             }
             else {
                 Toast.makeText(getActivity(), errorMsg, Toast.LENGTH_LONG).show();
