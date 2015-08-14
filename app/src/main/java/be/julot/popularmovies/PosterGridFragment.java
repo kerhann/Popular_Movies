@@ -36,7 +36,7 @@ public class PosterGridFragment extends Fragment {
 
     private MoviePosterItemAdapter moviePosterAdapter;
     //Insert API key here
-    public final String API_KEY = "...";
+    public final String API_KEY = "d02afd0919d8034eee26567d22343d36";
     public String sortby_pref;
     private ArrayList<MoviePosterItem> moviePosterItems = new ArrayList<>();
 
