@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -38,6 +39,7 @@ public class MoviePosterItemAdapter extends ArrayAdapter<MoviePosterItem> {
 
         TextView movieTitle = (TextView) view.findViewById(R.id.movie_title);
         TextView averageVote = (TextView) view.findViewById(R.id.movie_average_vote);
+        RelativeLayout wholeCell = (RelativeLayout) view.findViewById(R.id.wholeCell);
 
         //Truncate title if too long for the TextView in grid
         if (title.length() > 35)
@@ -48,7 +50,9 @@ public class MoviePosterItemAdapter extends ArrayAdapter<MoviePosterItem> {
         movieTitle.setText(title);
         averageVote.setText(Float.toString(moviePosterItem.movieRating));
 
-        view.setOnClickListener(new View.OnClickListener() {
+        //Setting onClickListener on the whole cell (i.e. the relative layout) so that a click
+        //on any cell element (poster image, title textview, rating...) sparks fire.
+        wholeCell.setOnClickListener(new View.OnClickListener() {
 
                                     @Override
                                     public void onClick(View v) {
@@ -59,23 +63,6 @@ public class MoviePosterItemAdapter extends ArrayAdapter<MoviePosterItem> {
 
                                 }
         );
-
-        //Necessary for the movie title TextView to also react to a click (not only the poster).
-        //Though, I don't understand why the above lines of view.setOnClickListener are not
-        //including the movie title TextView as a component reacting to the click as well.
-        //Why does it need to be defined separately?
-        movieTitle.setOnClickListener(new View.OnClickListener() {
-
-                                    @Override
-                                    public void onClick(View v) {
-                                        Intent detailIntent = new Intent(getContext(), MovieDetailActivity.class)
-                                                .putParcelableArrayListExtra(Intent.EXTRA_TEXT, moviePosterItem);
-                                        getContext().startActivity(detailIntent);
-                                    }
-
-                                }
-        );
-
 
         return view;
     }
