@@ -4,7 +4,7 @@
     </style>
 
     <style name="TextInPosterGrid" parent="TextAppearance.AppCompat">
-        <item name="android:layout_height">33dp</item>
+        <item name="android:layout_height">40dp</item>
         <item name="android:background">#50000000</item>
         <item name="android:padding">2dp</item>
         <item name="android:lines">2</item>

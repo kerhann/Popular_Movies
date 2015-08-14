@@ -13,5 +13,9 @@
     <string name="defaultVoteAverage">-</string>
     <string name="starImageContentDesc">A star to illustrate average votes</string>
     <string name="posterImageInGridContentDesc">The poster image in gridview</string>
-    <string name="connection_error">There was a problem connecting to the server. Please check your internet connection. If the problem persists, please contact us.</string>
+    <string name="error_title">Oops…</string>
+    <string name="connection_error_message">Popular Movies could not connect to the server. Please check your connection and try again.</string>
+    <string name="bug_report_message">If you think the problem is not due to your connection, please report the issue  and we will respond as soon as possible.</string>
+    <string name="try_again">Try again</string>
+    <string name="bug_report">Report bug</string>
 </resources>

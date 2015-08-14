@@ -1,17 +1,18 @@
 package be.julot.popularmovies;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridView;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,7 +36,8 @@ public class PosterGridFragment extends Fragment {
 
     private MoviePosterItemAdapter moviePosterAdapter;
     //Insert API key here
-    public final String API_KEY = "...";
+    public final String API_KEY = "d02afd0919d8034eee26567d22343d36";
+    public String sortby_pref;
     private ArrayList<MoviePosterItem> moviePosterItems = new ArrayList<>();
 
     //I chose to define a boolean to know if update of the grid is necessary. In doubt, it is "yes".
@@ -63,36 +65,47 @@ public class PosterGridFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.poster_grid_fragment, container, false);
 
-        //List<MoviePosterItem> c = new ArrayList<>();
-
         moviePosterAdapter = new MoviePosterItemAdapter(getActivity(), moviePosterItems);
-
         GridView posterGrid = (GridView) rootView.findViewById(R.id.movie_grid);
         posterGrid.setAdapter(moviePosterAdapter);
+
+        SharedPreferences userPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        sortby_pref = userPrefs.getString(getString(R.string.pref_key_sortby), getString(R.string.pref_key_default_sortby));
 
         //I have moved the following lines from the onStart() method to here. Within the onStart()
         //method, they were working great when screen was rotated, but not when the activity
         // was stopped but not destroyed (e.g. by pushing home button or launching another app),
         // and then restarted.
         if(updateNecessary) {
-            updatePosterGrid();
+            updatePosterGrid(sortby_pref);
         }
 
         return rootView;
     }
 
-    private void updatePosterGrid() {
-        FetchPostersTask update = new FetchPostersTask();
+    @Override
+    public void onResume() {
+        super.onResume();
+        //The following lines are necessary if the user changes its preference (changes the sorting
+        //criteria) and then comes back to this activity with the back button.
         SharedPreferences userPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String sortby_pref = userPrefs.getString(getString(R.string.pref_key_sortby), getString(R.string.pref_key_default_sortby));
-        update.execute(sortby_pref);
+        String saved_sortby_pref = userPrefs.getString(getString(R.string.pref_key_sortby), getString(R.string.pref_key_default_sortby));
+        if(sortby_pref != saved_sortby_pref) {
+            sortby_pref = saved_sortby_pref;
+            updatePosterGrid(sortby_pref);
+        }
+    }
+
+    private void updatePosterGrid(String sortby) {
+        FetchPostersTask update = new FetchPostersTask();
+        update.execute(sortby);
     }
 
     public class FetchPostersTask extends AsyncTask<String, Void, ArrayList<MoviePosterItem>> {
 
         //private final String LOG_TAG = FetchPostersTask.class.getSimpleName();
-        private String errorMsg;
-
+        //private String errorMsg;
+        private String IOMessage;
         private ProgressDialog dialog = new ProgressDialog(getActivity());
 
         /** progress dialog to show user that the backup is processing. */
@@ -131,7 +144,7 @@ public class PosterGridFragment extends Fragment {
                 InputStream streamFromTMDB = urlConnection.getInputStream();
                 StringBuilder buffer = new StringBuilder();
                 if (streamFromTMDB == null) {
-                    errorMsg = "No data was received fom the server. Try again later.";
+                    //errorMsg = "No data was received fom the server. Try again later.";
                     return null;
                 }
                 reader = new BufferedReader(new InputStreamReader(streamFromTMDB));
@@ -142,7 +155,7 @@ public class PosterGridFragment extends Fragment {
                 }
 
                 if (buffer.length() == 0) {
-                    errorMsg = "Buffer is empty";
+                    //errorMsg = "Buffer is empty";
                     return null;
                 }
 
@@ -150,7 +163,7 @@ public class PosterGridFragment extends Fragment {
 
             } catch (IOException e) {
                 e.printStackTrace();
-                errorMsg = getString(R.string.connection_error);
+                IOMessage = e.getMessage()+"\n\n"+Log.getStackTraceString(e.getCause());
                 return null;
             } finally {
                 if (urlConnection != null) {
@@ -161,7 +174,7 @@ public class PosterGridFragment extends Fragment {
                         reader.close();
                     } catch (IOException e) {
                         e.printStackTrace();
-                        errorMsg = "Reader could not be closed.";
+                        //errorMsg = "Reader could not be closed.";
                     }
                 }
             }
@@ -227,7 +240,36 @@ public class PosterGridFragment extends Fragment {
                 moviePosterItems = moviePosters;
             }
             else {
-                Toast.makeText(getActivity(), errorMsg, Toast.LENGTH_LONG).show();
+                //Toast.makeText(getActivity(), errorMsg, Toast.LENGTH_LONG).show();
+
+                getActivity().findViewById(R.id.error_reporting).setVisibility(View.VISIBLE);
+
+                View tryAgainButton = getActivity().findViewById(R.id.button_try);
+                tryAgainButton.setOnClickListener(new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View view) {
+                        Intent intent = getActivity().getIntent();
+                        getActivity().finish();
+                        startActivity(intent);
+
+                    }
+
+                });
+
+
+                final Date now = new Date();
+                View bugReportButton = getActivity().findViewById(R.id.button_bug);
+                bugReportButton.setOnClickListener(new View.OnClickListener(){
+
+                    @Override
+                    public void onClick(View view) {
+                        BugReport bugReport = new BugReport("Bug report", IOMessage, "jferet@gmail.com", now, getActivity());
+                        bugReport.Send();
+                    }
+
+                });
+
             }
         }
 
