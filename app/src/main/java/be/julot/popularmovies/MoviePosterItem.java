@@ -16,15 +16,20 @@ public class MoviePosterItem extends ArrayList<Parcelable> implements Parcelable
     int movieYear;
     int movieVoteCount;
     float movieRating;
+    boolean favorite;
+    long tmdb_ID;
 
     public MoviePosterItem(String mTitle, String mPoster, int mYear,
-                           String mOverview, int mVoteCount, float mRating) {
+                           String mOverview, int mVoteCount, float mRating, boolean mFavorite,
+                           long mTmdbId) {
         this.movieTitle = mTitle;
         this.moviePoster = mPoster;
         this.movieOverview = mOverview;
         this.movieYear = mYear;
         this.movieVoteCount = mVoteCount;
         this.movieRating = mRating;
+        this.favorite = mFavorite;
+        this.tmdb_ID = mTmdbId;
     }
 
 
@@ -35,6 +40,8 @@ public class MoviePosterItem extends ArrayList<Parcelable> implements Parcelable
         movieYear = in.readInt();
         movieVoteCount = in.readInt();
         movieRating = in.readFloat();
+        favorite = in.readInt() != 0;
+        tmdb_ID = in.readLong();
     }
 
     public static final Creator<MoviePosterItem> CREATOR = new Creator<MoviePosterItem>() {
@@ -62,6 +69,8 @@ public class MoviePosterItem extends ArrayList<Parcelable> implements Parcelable
         dest.writeInt(movieYear);
         dest.writeInt(movieVoteCount);
         dest.writeFloat(movieRating);
+        dest.writeInt(favorite ? 1 : 0);
+        dest.writeLong(tmdb_ID);
     }
 }
 

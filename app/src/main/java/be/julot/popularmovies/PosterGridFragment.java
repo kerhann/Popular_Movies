@@ -221,8 +221,9 @@ public class PosterGridFragment extends Fragment {
                 String overview = resultsArray.getJSONObject(i).getString("overview");
                 int voteCount = resultsArray.getJSONObject(i).getInt("vote_count");
                 double rating = resultsArray.getJSONObject(i).getDouble("vote_average");
+                long tmdb_ID = resultsArray.getJSONObject(i).getLong("id");
 
-                moviesResults.add(i, new MoviePosterItem(title, posterRelativeUrl, year, overview, voteCount, (float) rating));
+                moviesResults.add(i, new MoviePosterItem(title, posterRelativeUrl, year, overview, voteCount, (float) rating, false, tmdb_ID));
             }
 
             return moviesResults;
