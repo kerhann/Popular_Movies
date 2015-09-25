@@ -71,7 +71,7 @@
         android:text="@string/overviewTitle"
         android:id="@+id/overviewTitleTextView"
         android:textStyle="italic"
-        android:layout_below="@+id/yearTextView"
+        android:layout_below="@+id/add_Favorite"
         android:layout_alignLeft="@+id/yearTextView"
         android:layout_alignStart="@+id/yearTextView" />
 
@@ -81,10 +81,21 @@
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="@string/overviewDetail"
         android:id="@+id/overviewDetailTextView"
-        android:layout_below="@+id/overviewTitleTextView"
+        android:layout_centerVertical="true"
         android:layout_alignLeft="@+id/overviewTitleTextView"
         android:layout_alignStart="@+id/overviewTitleTextView" />
 
-</RelativeLayout>
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/add_favorite"
+            android:id="@+id/add_Favorite"
+            android:layout_below="@+id/yearTextView"
+            android:layout_toLeftOf="@+id/voteCountTextView"
+            android:background="#04ff39"
+            android:padding="5dp"/>
+
+    </RelativeLayout>
 
 </ScrollView>

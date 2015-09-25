@@ -18,4 +18,5 @@
     <string name="bug_report_message">If you think the problem is not due to your connection, please report the issue  and we will respond as soon as possible.</string>
     <string name="try_again">Try again</string>
     <string name="bug_report">Report bug</string>
+    <string name="add_favorite">+ Favorites</string>
 </resources>
