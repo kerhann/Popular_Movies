@@ -19,5 +19,7 @@
     <string name="try_again">Try again</string>
     <string name="bug_report">Report bug</string>
     <string name="add_favorite">+ Favorites</string>
-    <string name="remove_favorite">Remove from favorites</string>
+    <string name="remove_favorite">- Favorites</string>
+    <string name="add_favorite_msg">Added to favorites</string>
+    <string name="remove_favorite_msg">Removed from favorites</string>
 </resources>

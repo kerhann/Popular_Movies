@@ -4,11 +4,6 @@ import com.activeandroid.Model;
 import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Table;
 
-/**
- * Created by julot on 25/09/15.
- */
-
-
 // I made the choice to only record locally the movie ID on TMDB because:
 // 1) I need anyway to make an API call to get the right rating and number of votes (changes daily
 // and can't reasonably be locally stored)
