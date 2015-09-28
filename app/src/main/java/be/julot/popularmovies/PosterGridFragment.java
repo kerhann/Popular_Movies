@@ -117,80 +117,91 @@ public class PosterGridFragment extends Fragment {
         }
 
         protected ArrayList<MoviePosterItem> doInBackground(String... params) {
-            HttpURLConnection urlConnection = null;
-            BufferedReader reader = null;
-            String moviesJsonStr = null;
-
-            try {
-
-                //Decision is not to hardcode parameters in order to keep flexibility
-                //if the app needs to propose additional parameters to users through settings.
-                final String TMDB_BASE_URL = "https://api.themoviedb.org/3/discover/movie";
-                final String SORT_PARAM = "sort_by";
-                final String API_KEY_PARAM = "api_key";
-
-                Uri finalUri = Uri.parse(TMDB_BASE_URL)
-                        .buildUpon()
-                        .appendQueryParameter(SORT_PARAM, params[0])
-                        .appendQueryParameter(API_KEY_PARAM, API_KEY)
-                        .build();
-
-                URL finalUrl = new URL(finalUri.toString());
-
-                urlConnection = (HttpURLConnection) finalUrl.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
-
-                InputStream streamFromTMDB = urlConnection.getInputStream();
-                StringBuilder buffer = new StringBuilder();
-                if (streamFromTMDB == null) {
-                    //errorMsg = "No data was received fom the server. Try again later.";
-                    return null;
-                }
-                reader = new BufferedReader(new InputStreamReader(streamFromTMDB));
-                String line;
-
-                while ((line = reader.readLine()) != null) {
-                    buffer.append(line).append("\n");
-                }
-
-                if (buffer.length() == 0) {
-                    //errorMsg = "Buffer is empty";
-                    return null;
-                }
-
-                moviesJsonStr = buffer.toString();
-
-            } catch (IOException e) {
-                e.printStackTrace();
-                IOMessage = e.getMessage()+"\n\n"+Log.getStackTraceString(e.getCause());
-                return null;
-            } finally {
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        //errorMsg = "Reader could not be closed.";
-                    }
-                }
-            }
 
             ArrayList<MoviePosterItem> finalMoviesDataForGrid = new ArrayList<>();
 
-            try {
-                finalMoviesDataForGrid = getMoviesDataFromJson(moviesJsonStr);
-            } catch (JSONException e) {
-                e.printStackTrace();
+            if(params[0] == "favorites"){
+
+                finalMoviesDataForGrid = getFavorites();
+
+            }
+            else {
+
+                HttpURLConnection urlConnection = null;
+                BufferedReader reader = null;
+                String moviesJsonStr = null;
+
+                try {
+
+                    //Decision is not to hardcode parameters in order to keep flexibility
+                    //if the app needs to propose additional parameters to users through settings.
+                    final String TMDB_BASE_URL = "https://api.themoviedb.org/3/discover/movie";
+                    final String SORT_PARAM = "sort_by";
+                    final String API_KEY_PARAM = "api_key";
+
+                    Uri finalUri = Uri.parse(TMDB_BASE_URL)
+                            .buildUpon()
+                            .appendQueryParameter(SORT_PARAM, params[0])
+                            .appendQueryParameter(API_KEY_PARAM, API_KEY)
+                            .build();
+
+                    URL finalUrl = new URL(finalUri.toString());
+
+                    urlConnection = (HttpURLConnection) finalUrl.openConnection();
+                    urlConnection.setRequestMethod("GET");
+                    urlConnection.connect();
+
+                    InputStream streamFromTMDB = urlConnection.getInputStream();
+                    StringBuilder buffer = new StringBuilder();
+                    if (streamFromTMDB == null) {
+                        //errorMsg = "No data was received fom the server. Try again later.";
+                        return null;
+                    }
+                    reader = new BufferedReader(new InputStreamReader(streamFromTMDB));
+                    String line;
+
+                    while ((line = reader.readLine()) != null) {
+                        buffer.append(line).append("\n");
+                    }
+
+                    if (buffer.length() == 0) {
+                        //errorMsg = "Buffer is empty";
+                        return null;
+                    }
+
+                    moviesJsonStr = buffer.toString();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    IOMessage = e.getMessage() + "\n\n" + Log.getStackTraceString(e.getCause());
+                    return null;
+                } finally {
+                    if (urlConnection != null) {
+                        urlConnection.disconnect();
+                    }
+                    if (reader != null) {
+                        try {
+                            reader.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            //errorMsg = "Reader could not be closed.";
+                        }
+                    }
+                }
+
+                try {
+                    finalMoviesDataForGrid = getMoviesDataFromJson(moviesJsonStr);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
 
             return finalMoviesDataForGrid;
         }
 
-
+        private ArrayList<MoviePosterItem> getFavorites() {
+            return null;
+        }
 
         private ArrayList<MoviePosterItem> getMoviesDataFromJson(String moviesJsonStr) throws JSONException {
 

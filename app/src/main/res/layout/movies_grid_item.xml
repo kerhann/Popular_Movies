@@ -27,27 +27,5 @@
         android:gravity="center"
         android:fontFamily="sans-serif-condensed" />
 
-    <TextView
-        style="@style/TextInPosterGrid"
-        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
-        android:layout_width="wrap_content"
-        android:text="@string/defaultVoteAverage"
-        android:id="@+id/movie_average_vote"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:textColor="#ffffff"
-        android:textAllCaps="true"
-        android:gravity="center" />
-
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/ratingStar"
-        android:layout_alignParentTop="true"
-        android:layout_toLeftOf="@+id/movie_average_vote"
-        android:layout_toStartOf="@+id/movie_average_vote"
-        android:src="@drawable/star"
-        android:contentDescription="@string/starImageContentDesc" />
-
 
 </RelativeLayout>

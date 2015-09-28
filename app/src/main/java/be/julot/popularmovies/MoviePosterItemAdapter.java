@@ -38,7 +38,6 @@ public class MoviePosterItemAdapter extends ArrayAdapter<MoviePosterItem> {
         String title = moviePosterItem.movieTitle;
 
         TextView movieTitle = (TextView) view.findViewById(R.id.movie_title);
-        TextView averageVote = (TextView) view.findViewById(R.id.movie_average_vote);
         RelativeLayout wholeCell = (RelativeLayout) view.findViewById(R.id.wholeCell);
 
         //Truncate title if too long for the TextView in grid
@@ -48,7 +47,6 @@ public class MoviePosterItemAdapter extends ArrayAdapter<MoviePosterItem> {
         }
 
         movieTitle.setText(title);
-        averageVote.setText(Float.toString(moviePosterItem.movieRating));
 
         //Setting onClickListener on the whole cell (i.e. the relative layout) so that a click
         //on any cell element (poster image, title textview, rating...) sparks fire.

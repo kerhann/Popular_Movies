@@ -8,9 +8,11 @@
     <string-array name="pref_sortby_list_titles">
         <item>Movie popularity</item>
         <item>Average vote score</item>
+        <item>My favorites</item>
     </string-array>
     <string-array name="pref_sortby_list_values">
         <item>popularity.desc</item>
         <item>vote_average.desc</item>
+        <item>favorites</item>
     </string-array>
 </resources>

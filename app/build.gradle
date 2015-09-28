@@ -29,5 +29,6 @@ dependencies {
     compile 'com.android.support:appcompat-v7:22.2.1'
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.android.support:support-v4:22.2.1'
-    compile 'com.michaelpardo:activeandroid:3.1.0-SNAPSHOT'
+    compile 'com.pushtorefresh.storio:sqlite:1.4.0'
+    compile 'com.pushtorefresh.storio:content-resolver:1.4.0'
 }
