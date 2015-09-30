@@ -9,10 +9,32 @@ package be.julot.popularmovies;
 // for this too
     //So, my favorite list is locally stored, but not movie details.
 
-//@Table(name = "Favorites")
-public class DB_Favorite_Movies  {
+import com.activeandroid.Model;
+import com.activeandroid.annotation.Column;
+import com.activeandroid.annotation.Table;
 
-    //@Column(name = "tmdb_ID")
+@Table(name = "Favorites")
+public class DB_Favorite_Movies extends Model {
+
+    @Column(name = "tmdb_ID")
     public long tmdb_ID;
+
+    @Column(name = "title")
+    public String movieTitle;
+
+    @Column(name = "overview")
+    public String movieOverview;
+
+    @Column(name = "year")
+    public int movieYear;
+
+    @Column(name = "rating")
+    public float movieRating;
+
+    @Column(name = "vote_count")
+    public int movieVoteCount;
+
+    @Column(name = "poster_path")
+    public String moviePoster;
 
 }

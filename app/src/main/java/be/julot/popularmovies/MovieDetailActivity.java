@@ -3,13 +3,15 @@ package be.julot.popularmovies;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.activeandroid.query.Delete;
+import com.activeandroid.query.Select;
 import com.squareup.picasso.Picasso;
 
 public class MovieDetailActivity extends AppCompatActivity {
@@ -24,9 +26,9 @@ public class MovieDetailActivity extends AppCompatActivity {
         movie = (MoviePosterItem) getIntent().getParcelableArrayListExtra(Intent.EXTRA_TEXT);
         fillMovieFields(movie);
 
-        //DB_Favorite_Movies favorite = getFavorite(movie.tmdb_ID);
+        DB_Favorite_Movies favorite = getFavorite(movie.tmdb_ID);
 
-        //updateFavoriteButton(favorite != null);
+        updateFavoriteButton(favorite != null);
 
     }
 
@@ -57,7 +59,7 @@ public class MovieDetailActivity extends AppCompatActivity {
     public void updateFavorites(View V) {
 
         if(movie.favorite) {
-            //new Delete().from(DB_Favorite_Movies.class).where("tmdb_ID = ?", movie.tmdb_ID).execute();
+            new Delete().from(DB_Favorite_Movies.class).where("tmdb_ID = ?", movie.tmdb_ID).execute();
             movie.favorite = false;
             updateFavoriteButton(false);
             Toast.makeText(this, R.string.remove_favorite_msg, Toast.LENGTH_LONG).show();
@@ -65,7 +67,13 @@ public class MovieDetailActivity extends AppCompatActivity {
         else {
             DB_Favorite_Movies favorite = new DB_Favorite_Movies();
             favorite.tmdb_ID = movie.tmdb_ID;
-            //favorite.save();
+            favorite.movieTitle = movie.movieTitle;
+            favorite.movieOverview = movie.movieOverview;
+            favorite.movieYear = movie.movieYear;
+            favorite.movieRating = movie.movieRating;
+            favorite.movieVoteCount = movie.movieVoteCount;
+            favorite.moviePoster = movie.moviePoster;
+            favorite.save();
             updateFavoriteButton(true);
             movie.favorite = true;
             Toast.makeText(this, R.string.add_favorite_msg, Toast.LENGTH_LONG).show();
@@ -85,11 +93,11 @@ public class MovieDetailActivity extends AppCompatActivity {
         }
     }
 
-    //public static DB_Favorite_Movies getFavorite(long id) {
-        /*return new Select()
+    public static DB_Favorite_Movies getFavorite(long id) {
+        return new Select()
                 .from(DB_Favorite_Movies.class)
                 .where("tmdb_ID = ?", id)
-                .executeSingle();*/
-    //}
+                .executeSingle();
+    }
 
 }

@@ -1,10 +1,12 @@
 package be.julot.popularmovies;
 
+import android.annotation.TargetApi;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -13,6 +15,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridView;
+
+import com.activeandroid.query.Select;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,7 +33,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 
 public class PosterGridFragment extends Fragment {
@@ -43,7 +49,7 @@ public class PosterGridFragment extends Fragment {
     //I chose to define a boolean to know if update of the grid is necessary. In doubt, it is "yes".
     //Other factors may in the future also change this boolean, such as the fact that the grid
     //has not been refreshed for x hours, etc.
-    private Boolean updateNecessary = true;
+    public Boolean updateNecessary = true;
 
     public PosterGridFragment() {}
 
@@ -83,6 +89,7 @@ public class PosterGridFragment extends Fragment {
         return rootView;
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     @Override
     public void onResume() {
         super.onResume();
@@ -90,10 +97,29 @@ public class PosterGridFragment extends Fragment {
         //criteria) and then comes back to this activity with the back button.
         SharedPreferences userPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String saved_sortby_pref = userPrefs.getString(getString(R.string.pref_key_sortby), getString(R.string.pref_key_default_sortby));
-        if(sortby_pref != saved_sortby_pref) {
+        if(!Objects.equals(sortby_pref, saved_sortby_pref)) {
             sortby_pref = saved_sortby_pref;
             updatePosterGrid(sortby_pref);
         }
+        else if(Objects.equals(saved_sortby_pref, "favorites"))
+        {
+            //The following is necessary if a user has gone to a movie details screen, then
+            //removed a movie from his/her favorites, then come back to the poster grid screen (and
+            // the grid is due to show favorites).
+            //There is a need to check that if the grid needs to be updated (we do it by comparing
+            // if the size of the saved ArrayList is different from the favorite lists).
+            List<DB_Favorite_Movies> favList = new Select()
+                    .from(DB_Favorite_Movies.class)
+                    .execute();
+
+            if(favList.size() != moviePosterItems.size()) {
+                updatePosterGrid(sortby_pref);
+            }
+            else if(favList.size() == 0) {
+                getActivity().findViewById(R.id.no_favorites).setVisibility(View.VISIBLE);
+            }
+        }
+
     }
 
     private void updatePosterGrid(String sortby) {
@@ -116,11 +142,14 @@ public class PosterGridFragment extends Fragment {
             this.dialog.show();
         }
 
+        @TargetApi(Build.VERSION_CODES.KITKAT)
         protected ArrayList<MoviePosterItem> doInBackground(String... params) {
 
             ArrayList<MoviePosterItem> finalMoviesDataForGrid = new ArrayList<>();
 
-            if(params[0] == "favorites"){
+
+
+            if(Objects.equals(params[0], "favorites")){
 
                 finalMoviesDataForGrid = getFavorites();
 
@@ -200,7 +229,33 @@ public class PosterGridFragment extends Fragment {
         }
 
         private ArrayList<MoviePosterItem> getFavorites() {
-            return null;
+
+            List<DB_Favorite_Movies> favList = new Select()
+                    .from(DB_Favorite_Movies.class)
+                    .execute();
+
+            ArrayList<MoviePosterItem> favorites = new ArrayList<MoviePosterItem>();
+
+            if(favList.size() == 0) {
+                favorites = null;
+            }
+            else {
+                for (int i = 0; i < favList.size(); i++) {
+
+                    favorites.add(i, new MoviePosterItem(
+                            favList.get(i).movieTitle,
+                            favList.get(i).moviePoster,
+                            favList.get(i).movieYear,
+                            favList.get(i).movieOverview,
+                            favList.get(i).movieVoteCount,
+                            favList.get(i).movieRating,
+                            true,
+                            favList.get(i).tmdb_ID));
+
+                }
+            }
+
+            return favorites;
         }
 
         private ArrayList<MoviePosterItem> getMoviesDataFromJson(String moviesJsonStr) throws JSONException {
@@ -240,48 +295,56 @@ public class PosterGridFragment extends Fragment {
             return moviesResults;
         }
 
+        @TargetApi(Build.VERSION_CODES.KITKAT)
         @Override
         protected void onPostExecute(ArrayList<MoviePosterItem> moviePosters) {
             super.onPostExecute(moviePosters);
+            getActivity().findViewById(R.id.no_favorites).setVisibility(View.GONE);
+
+
             if (dialog.isShowing()) {
                 dialog.dismiss();
             }
             if (moviePosters != null) {
-                moviePosterAdapter.clear();
-                moviePosterAdapter.addAll(moviePosters);
-                moviePosterItems = moviePosters;
+                    moviePosterAdapter.clear();
+                    moviePosterAdapter.addAll(moviePosters);
+                    moviePosterItems = moviePosters;
             }
             else {
-                //Toast.makeText(getActivity(), errorMsg, Toast.LENGTH_LONG).show();
+                    moviePosterAdapter.clear();
+                    if(Objects.equals(sortby_pref, "favorites"))
+                    {
+                        getActivity().findViewById(R.id.no_favorites).setVisibility(View.VISIBLE);
+                    } else {
+                        getActivity().findViewById(R.id.error_reporting).setVisibility(View.VISIBLE);
 
-                getActivity().findViewById(R.id.error_reporting).setVisibility(View.VISIBLE);
+                    View tryAgainButton = getActivity().findViewById(R.id.button_try);
+                    tryAgainButton.setOnClickListener(new View.OnClickListener() {
 
-                View tryAgainButton = getActivity().findViewById(R.id.button_try);
-                tryAgainButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            Intent intent = getActivity().getIntent();
+                            getActivity().finish();
+                            startActivity(intent);
 
-                    @Override
-                    public void onClick(View view) {
-                        Intent intent = getActivity().getIntent();
-                        getActivity().finish();
-                        startActivity(intent);
+                        }
+
+                    });
+
+
+                    final Date now = new Date();
+                    View bugReportButton = getActivity().findViewById(R.id.button_bug);
+                    bugReportButton.setOnClickListener(new View.OnClickListener() {
+
+                        @Override
+                        public void onClick(View view) {
+                            BugReport bugReport = new BugReport("Bug report", IOMessage, "jferet@gmail.com", now, getActivity());
+                            bugReport.Send();
+                        }
+
+                    });
 
                     }
-
-                });
-
-
-                final Date now = new Date();
-                View bugReportButton = getActivity().findViewById(R.id.button_bug);
-                bugReportButton.setOnClickListener(new View.OnClickListener(){
-
-                    @Override
-                    public void onClick(View view) {
-                        BugReport bugReport = new BugReport("Bug report", IOMessage, "jferet@gmail.com", now, getActivity());
-                        bugReport.Send();
-                    }
-
-                });
-
             }
         }
 
