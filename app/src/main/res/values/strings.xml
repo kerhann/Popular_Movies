@@ -23,4 +23,6 @@
     <string name="add_favorite_msg">Added to favorites</string>
     <string name="remove_favorite_msg">Removed from favorites</string>
     <string name="no_favorites">There is no recorded favorite.</string>
+    <string name="trailers"><![CDATA[Trailers & Videos]]></string>
+    <string name="no_trailer_title">No title</string>
 </resources>
