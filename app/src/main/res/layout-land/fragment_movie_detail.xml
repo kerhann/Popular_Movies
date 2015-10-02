@@ -103,6 +103,36 @@
             android:layout_marginTop="35dp"
             android:textColor="#ffffff" />
 
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="@string/trailers"
+            android:id="@+id/trailerTextView"
+            android:layout_below="@+id/overviewDetailTextView"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="20dp"
+            android:textStyle="italic" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/not_available"
+            android:id="@+id/trailer_not_available"
+            android:layout_below="@+id/trailerTextView"
+            android:visibility="gone"/>
+
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:layout_below="@+id/trailer_not_available"
+            android:layout_marginTop="10dp"
+            android:id="@+id/video_list">
+        </ListView>
+
     </RelativeLayout>
 
 </ScrollView>

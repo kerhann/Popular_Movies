@@ -39,10 +39,10 @@ import java.util.Objects;
 
 
 public class PosterGridFragment extends Fragment {
+    public final String API_KEY = "d02afd0919d8034eee26567d22343d36";
 
     private MoviePosterItemAdapter moviePosterAdapter;
     //Insert API key here
-    public final String API_KEY = "d02afd0919d8034eee26567d22343d36";
     public String sortby_pref;
     private ArrayList<MoviePosterItem> moviePosterItems = new ArrayList<>();
 

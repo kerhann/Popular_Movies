@@ -25,4 +25,6 @@
     <string name="no_favorites">There is no recorded favorite.</string>
     <string name="trailers"><![CDATA[Trailers & Videos]]></string>
     <string name="no_trailer_title">No title</string>
+    <string name="not_available">Loading...</string>
+    <string name="video_loading">Loading...</string>
 </resources>

@@ -11,19 +11,12 @@ import java.util.ArrayList;
 public class MoviePosterItem extends ArrayList<Parcelable> implements Parcelable {
 
     public long tmdb_ID;
-
     public String movieTitle;
-
     public String movieOverview;
-
     public int movieYear;
-
     public float movieRating;
-
     public int movieVoteCount;
-
     public String moviePoster;
-
     boolean favorite;
 
     public MoviePosterItem(String mTitle, String mPoster, int mYear,
