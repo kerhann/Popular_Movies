@@ -1,23 +1,28 @@
 package be.julot.popularmovies;
 
+import android.app.ActionBar;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RatingBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.activeandroid.query.Delete;
 import com.activeandroid.query.Select;
+import com.linearlistview.LinearListView;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -31,6 +36,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -53,6 +61,8 @@ public class MovieDetailActivityFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_movie_detail, container, false);
 
+        ButterKnife.bind(this, rootView);
+
         movie = (MoviePosterItem) getActivity().getIntent().getParcelableArrayListExtra(Intent.EXTRA_TEXT);
 
         fillMovieFields(movie, rootView);
@@ -70,6 +80,30 @@ public class MovieDetailActivityFragment extends Fragment {
 
 
         return rootView;
+    }
+
+    @OnClick(R.id.button_Favorite)
+    public void updateFavorites(){
+        if(movie.favorite) {
+            new Delete().from(DB_Favorite_Movies.class).where("tmdb_ID = ?", movie.tmdb_ID).execute();
+            movie.favorite = false;
+            updateFavoriteButton(false, getView());
+            Toast.makeText(getActivity(), R.string.remove_favorite_msg, Toast.LENGTH_LONG).show();
+        }
+        else {
+            DB_Favorite_Movies favorite = new DB_Favorite_Movies();
+            favorite.tmdb_ID = movie.tmdb_ID;
+            favorite.movieTitle = movie.movieTitle;
+            favorite.movieOverview = movie.movieOverview;
+            favorite.movieYear = movie.movieYear;
+            favorite.movieRating = movie.movieRating;
+            favorite.movieVoteCount = movie.movieVoteCount;
+            favorite.moviePoster = movie.moviePoster;
+            favorite.save();
+            updateFavoriteButton(true, getView());
+            movie.favorite = true;
+            Toast.makeText(getActivity(), R.string.add_favorite_msg, Toast.LENGTH_LONG).show();
+        }
     }
 
 
@@ -191,10 +225,20 @@ public class MovieDetailActivityFragment extends Fragment {
 
             if (videos != null) {
                 videosAdapter.clear();
+
+                ListView videoList = (ListView) getActivity().findViewById(R.id.video_list);
+                RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) videoList.getLayoutParams();
+
+                int pixels = (int) TypedValue.applyDimension(
+                        TypedValue.COMPLEX_UNIT_DIP, 45, getActivity().getResources()
+                                .getDisplayMetrics());
+                Toast.makeText(getActivity(), Integer.toString(pixels), Toast.LENGTH_SHORT).show();
+                params.height = (pixels*videos.size())+(2*videos.size());
+                videoList.setLayoutParams(params);
+                videoList.requestLayout();
+
                 videosAdapter.addAll(videos);
                 allVideos = videos;
-
-                Toast.makeText(getActivity(),"yes", Toast.LENGTH_LONG).show();
 
             } else {
                 trailer_message.setText(R.string.not_available);
@@ -226,32 +270,6 @@ public class MovieDetailActivityFragment extends Fragment {
             // if no overview is available
         }
         ratingBar.setRating(movie.movieRating / 2); //converting a 10-based value to 5-star rating
-    }
-
-    public void updateFavorites(View V) {
-
-
-        if(movie.favorite) {
-            new Delete().from(DB_Favorite_Movies.class).where("tmdb_ID = ?", movie.tmdb_ID).execute();
-            movie.favorite = false;
-            updateFavoriteButton(false, getView());
-            Toast.makeText(getActivity(), R.string.remove_favorite_msg, Toast.LENGTH_LONG).show();
-        }
-        else {
-            DB_Favorite_Movies favorite = new DB_Favorite_Movies();
-            favorite.tmdb_ID = movie.tmdb_ID;
-            favorite.movieTitle = movie.movieTitle;
-            favorite.movieOverview = movie.movieOverview;
-            favorite.movieYear = movie.movieYear;
-            favorite.movieRating = movie.movieRating;
-            favorite.movieVoteCount = movie.movieVoteCount;
-            favorite.moviePoster = movie.moviePoster;
-            favorite.save();
-            updateFavoriteButton(true, getView());
-            movie.favorite = true;
-            Toast.makeText(getActivity(), R.string.add_favorite_msg, Toast.LENGTH_LONG).show();
-        }
-
     }
 
     public void updateFavoriteButton(boolean favorite, View rootView) {

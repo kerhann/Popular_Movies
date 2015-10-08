@@ -1,4 +1,4 @@
-<ScrollView
+<be.julot.popularmovies.CustomVerticalScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="match_parent">
 
@@ -96,7 +96,6 @@
             android:id="@+id/button_Favorite"
             android:background="#0e678a"
             android:padding="5dp"
-            android:onClick="updateFavorites"
             android:layout_below="@+id/yearTextView"
             android:layout_alignLeft="@+id/yearTextView"
             android:layout_alignStart="@+id/yearTextView"
@@ -126,22 +125,12 @@
         <ListView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:layout_below="@+id/trailer_not_available"
             android:layout_marginTop="10dp"
-            android:id="@+id/video_list"
-            android:nestedScrollingEnabled="false">
+            android:id="@+id/video_list">
         </ListView>
 
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/editText"
-        android:layout_below="@+id/video_list"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:text="TEST" />
+    </RelativeLayout>
 
-</RelativeLayout>
-
-</ScrollView>
+</be.julot.popularmovies.CustomVerticalScrollView>

@@ -96,7 +96,6 @@
             android:id="@+id/button_Favorite"
             android:background="#0e678a"
             android:padding="5dp"
-            android:onClick="updateFavorites"
             android:layout_below="@+id/yearTextView"
             android:layout_toRightOf="@+id/posterImageDetail"
             android:layout_toEndOf="@+id/posterImageDetail"
@@ -127,7 +126,7 @@
         <ListView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:layout_below="@+id/trailer_not_available"
             android:layout_marginTop="10dp"
             android:id="@+id/video_list">
