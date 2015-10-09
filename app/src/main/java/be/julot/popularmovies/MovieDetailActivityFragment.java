@@ -47,7 +47,9 @@ public class MovieDetailActivityFragment extends Fragment {
     public final String API_KEY = "d02afd0919d8034eee26567d22343d36";
 
     private ArrayList<VideoItem> allVideos = new ArrayList<>();
+    private ArrayList<ReviewItem> allReviews = new ArrayList<>();
     private VideoAdapter videosAdapter;
+    private ReviewAdapter reviewsAdapter;
     public MoviePosterItem movie;
 
 
@@ -60,24 +62,36 @@ public class MovieDetailActivityFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.fragment_movie_detail, container, false);
-
+        //Trying Butter Knife
         ButterKnife.bind(this, rootView);
 
+        //Get the movie details received via intent...
         movie = (MoviePosterItem) getActivity().getIntent().getParcelableArrayListExtra(Intent.EXTRA_TEXT);
-
+        //... and put them into the view
         fillMovieFields(movie, rootView);
-
+        //Check if movie is a favorite...
         DB_Favorite_Movies favorite = getFavorite(movie.tmdb_ID);
-
+        //...and update the favorite button accordingly if it is a favorite
         updateFavoriteButton(favorite != null, rootView);
 
+        //Create the adapter for the list of trailers & videos
         videosAdapter = new VideoAdapter(getActivity(), allVideos);
+        //It is not a good practice to put a scrollable view (listview) into another scrollable
+        //view (scrollview), but I chose to do so and adapt the video listview's height so that
+        //it is never scrollable (height is always equal to sum of all videos and trailers).
         ListView videoList = (ListView) rootView.findViewById(R.id.video_list);
         videoList.setAdapter(videosAdapter);
-
+        //Finally, get the videos & trailers
         FetchVideos getVideos = new FetchVideos();
-        getVideos.execute(String.valueOf(movie.tmdb_ID), "en");
+        getVideos.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, String.valueOf(movie.tmdb_ID), "en");
 
+        //Same thing for list of reviews
+        reviewsAdapter = new ReviewAdapter(getActivity(), allReviews);
+        ListView reviewList = (ListView) rootView.findViewById(R.id.review_list);
+        reviewList.setAdapter(reviewsAdapter);
+        //and get the reviews
+        FetchReviews getReviews = new FetchReviews();
+        getReviews.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, String.valueOf(movie.tmdb_ID), "en");
 
         return rootView;
     }
@@ -145,8 +159,6 @@ public class MovieDetailActivityFragment extends Fragment {
                         .build();
 
                 URL finalUrl = new URL(finalUri.toString());
-
-                Log.v("URIiiiiii", finalUri.toString());
 
                 urlConnection = (HttpURLConnection) finalUrl.openConnection();
                 urlConnection.setRequestMethod("GET");
@@ -241,13 +253,144 @@ public class MovieDetailActivityFragment extends Fragment {
                 allVideos = videos;
 
             } else {
-                trailer_message.setText(R.string.not_available);
+                //trailer_message.setText(R.string.not_available);
             }
         }
 
 
     }
 
+    public class FetchReviews extends AsyncTask<String, Void, ArrayList<ReviewItem>> {
+
+        private String IOMessage;
+        //private TextView review_message = (TextView) rootView.findViewById(R.id.no_review);
+
+        @Override
+        protected void onPreExecute() {
+        }
+
+        @Override
+        protected ArrayList<ReviewItem> doInBackground(String... params) {
+
+            ArrayList<ReviewItem> finalReviewDataForList = new ArrayList<>();
+
+            HttpURLConnection urlConnection = null;
+            BufferedReader reader = null;
+            String reviewsJsonStr = null;
+
+            try {
+
+                //Decision is not to hardcode parameters in order to keep flexibility
+                //if the app needs to propose additional parameters to users through settings.
+                final String TMDB_BASE_URL = "https://api.themoviedb.org/3/movie/" + params[0] + "/reviews";
+                final String LANG_PARAM = "language";
+                final String API_KEY_PARAM = "api_key";
+
+                Uri finalUri = Uri.parse(TMDB_BASE_URL)
+                        .buildUpon()
+                        .appendQueryParameter(LANG_PARAM, params[1])
+                        .appendQueryParameter(API_KEY_PARAM, API_KEY)
+                        .build();
+
+                URL finalUrl = new URL(finalUri.toString());
+
+                urlConnection = (HttpURLConnection) finalUrl.openConnection();
+                urlConnection.setRequestMethod("GET");
+                urlConnection.connect();
+
+                InputStream streamFromTMDB = urlConnection.getInputStream();
+                StringBuilder buffer = new StringBuilder();
+                if (streamFromTMDB == null) {
+                    //errorMsg = "No data was received fom the server. Try again later.";
+                    return null;
+                }
+                reader = new BufferedReader(new InputStreamReader(streamFromTMDB));
+                String line;
+
+                while ((line = reader.readLine()) != null) {
+                    buffer.append(line).append("\n");
+                }
+
+                if (buffer.length() == 0) {
+                    //errorMsg = "Buffer is empty";
+                    return null;
+                }
+
+                reviewsJsonStr = buffer.toString();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                IOMessage = e.getMessage() + "\n\n" + Log.getStackTraceString(e.getCause());
+                return null;
+            } finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        //errorMsg = "Reader could not be closed.";
+                    }
+                }
+            }
+
+            try {
+                finalReviewDataForList = getReviewDataFromJson(reviewsJsonStr);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            return finalReviewDataForList;
+        }
+
+        private ArrayList<ReviewItem> getReviewDataFromJson(String reviewsJsonStr) throws JSONException {
+            JSONObject reviewsJSON = new JSONObject(reviewsJsonStr);
+            JSONArray reviewsArray = reviewsJSON.getJSONArray("results");
+
+            ArrayList<ReviewItem> reviewsResults = new ArrayList<>();
+
+            for(int i = 0; i < reviewsArray.length(); i++) {
+                String reviewer = reviewsArray.getJSONObject(i).getString("author");
+                String review = reviewsArray.getJSONObject(i).getString("content");
+
+                //Log.v("review", reviewsArray.getJSONObject(i).getString("author"));
+
+                reviewsResults.add(i, new ReviewItem(reviewer, review));
+            }
+
+            return reviewsResults;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<ReviewItem> reviews) {
+            super.onPostExecute(reviews);
+
+            if (reviews != null) {
+                reviewsAdapter.clear();
+
+                ListView reviewList = (ListView) getActivity().findViewById(R.id.review_list);
+                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) reviewList.getLayoutParams();
+
+                int pixels = (int) TypedValue.applyDimension(
+                        TypedValue.COMPLEX_UNIT_DIP, 100, getActivity().getResources()
+                                .getDisplayMetrics());
+                Toast.makeText(getActivity(), Integer.toString(pixels), Toast.LENGTH_SHORT).show();
+                params.height = (pixels*reviews.size())+(2*reviews.size());
+                reviewList.setLayoutParams(params);
+                reviewList.requestLayout();
+
+                reviewsAdapter.addAll(reviews);
+                allReviews = reviews;
+
+            } else {
+                //review_message.setText(R.string.no_review);
+            }
+        }
+
+
+    }
 
     private void fillMovieFields(MoviePosterItem movie, View rootView) {
 

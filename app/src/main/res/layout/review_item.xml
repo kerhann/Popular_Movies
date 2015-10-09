@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:focusable="false"
+    android:focusableInTouchMode="false">
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Julien Feret"
-        android:id="@+id/reviewer_name" />
-
-    <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="This is my review and bla blab bla mmmm mmmm mmmmm mmm mmmm mmmm mmmm mmmm mmmmm mmmmmm   "
-        android:id="@+id/review"
-        android:background="@drawable/transparent_background_gradient"/>
+        android:id="@+id/reviewer_name"
+        android:background="#FFFFFFFF"
+        android:textStyle="bold|italic" />
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:id="@+id/review" />
 
 </LinearLayout>

@@ -33,15 +33,16 @@ public class ReviewAdapter extends ArrayAdapter<ReviewItem> {
 
         TextView reviewerNameTextView = (TextView) view.findViewById(R.id.reviewer_name);
         TextView reviewTextView = (TextView) view.findViewById(R.id.review);
-        LinearLayout wholeCellVideo = (LinearLayout) view.findViewById(R.id.wholeCellVideo);
+        //LinearLayout wholeCellVideo = (LinearLayout) view.findViewById(R.id.wholeCellVideo);
 
         //Truncate title if too long for the TextView in grid
-        if (review.length() > 100)
-        {
-            review = review.substring(0,100)+"…";
-        }
+//        if (review.length() > 100)
+//        {
+//            review = review.substring(0,100)+"…";
+//        }
 
-        reviewerNameTextView.setText(review);
+        reviewerNameTextView.setText(reviewer);
+        reviewTextView.setText(review);
 
 
         //Setting onClickListener on the whole cell (i.e. the relative layout) so that a click
