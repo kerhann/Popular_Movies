@@ -25,8 +25,8 @@
     <string name="no_favorites">There is no recorded favorite.</string>
     <string name="trailers"><![CDATA[Trailers & Videos]]></string>
     <string name="no_trailer_title">No title</string>
-    <string name="not_available">Loading…</string>
-    <string name="video_loading">Loading…</string>
+    <string name="video_not_available">No video available</string>
+    <string name="loading">Loading…</string>
     <string name="more_reviews">More reviews…</string>
     <string name="no_review">There is no review for this movie</string>
     <string name="movie_poster_image_content_description">Movie poster</string>

@@ -1,28 +1,24 @@
 package be.julot.popularmovies;
 
-import android.app.ActionBar;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RatingBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.activeandroid.query.Delete;
 import com.activeandroid.query.Select;
-import com.linearlistview.LinearListView;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -82,7 +78,7 @@ public class MovieDetailActivityFragment extends Fragment {
         ListView videoList = (ListView) rootView.findViewById(R.id.video_list);
         videoList.setAdapter(videosAdapter);
         //Finally, get the videos & trailers
-        FetchVideos getVideos = new FetchVideos();
+        FetchVideos getVideos = new FetchVideos(getActivity(), rootView);
         getVideos.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, String.valueOf(movie.tmdb_ID), "en");
 
         //Same thing for list of reviews
@@ -90,7 +86,7 @@ public class MovieDetailActivityFragment extends Fragment {
         ListView reviewList = (ListView) rootView.findViewById(R.id.review_list);
         reviewList.setAdapter(reviewsAdapter);
         //and get the reviews
-        FetchReviews getReviews = new FetchReviews();
+        FetchReviews getReviews = new FetchReviews(getActivity(), rootView);
         getReviews.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, String.valueOf(movie.tmdb_ID), "en");
 
         return rootView;
@@ -124,8 +120,13 @@ public class MovieDetailActivityFragment extends Fragment {
     public class FetchVideos extends AsyncTask<String, Void, ArrayList<VideoItem>> {
 
         private String IOMessage;
-        private TextView trailer_message = (TextView) getActivity().findViewById(R.id.trailer_not_available);
+        private Context context;
+        private View rootView;
 
+        public FetchVideos(Context context, View rootView) {
+            this.context = context;
+            this.rootView = rootView;
+        }
 
 
         /** progress dialog to show user that the backup is processing. */
@@ -223,7 +224,8 @@ public class MovieDetailActivityFragment extends Fragment {
                 String site = videosArray.getJSONObject(i).getString("site");
                 String type = videosArray.getJSONObject(i).getString("type");
 
-                Log.v("video", videosArray.getJSONObject(i).getString("name"));
+                VideoItem item = new VideoItem(site, name, key, type);
+                item.populateView(context, rootView);
 
                 videosResults.add(i, new VideoItem(site, name, key, type));
             }
@@ -235,25 +237,11 @@ public class MovieDetailActivityFragment extends Fragment {
         protected void onPostExecute(ArrayList<VideoItem> videos) {
             super.onPostExecute(videos);
 
-            if (videos != null) {
-                videosAdapter.clear();
-
-                ListView videoList = (ListView) getActivity().findViewById(R.id.video_list);
-                RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) videoList.getLayoutParams();
-
-                int pixels = (int) TypedValue.applyDimension(
-                        TypedValue.COMPLEX_UNIT_DIP, 45, getActivity().getResources()
-                                .getDisplayMetrics());
-                Toast.makeText(getActivity(), Integer.toString(pixels), Toast.LENGTH_SHORT).show();
-                params.height = (pixels*videos.size())+(2*videos.size());
-                videoList.setLayoutParams(params);
-                videoList.requestLayout();
-
-                videosAdapter.addAll(videos);
-                allVideos = videos;
-
+            if (videos.size() != 0) {
+                rootView.findViewById(R.id.trailer_not_available).setVisibility(View.GONE);
             } else {
-                //trailer_message.setText(R.string.not_available);
+                TextView trailer_message = (TextView) rootView.findViewById(R.id.trailer_not_available);
+                trailer_message.setText(R.string.video_not_available);
             }
         }
 
@@ -263,7 +251,14 @@ public class MovieDetailActivityFragment extends Fragment {
     public class FetchReviews extends AsyncTask<String, Void, ArrayList<ReviewItem>> {
 
         private String IOMessage;
-        //private TextView review_message = (TextView) rootView.findViewById(R.id.no_review);
+        private Context context;
+        private View rootView;
+
+        public FetchReviews(Context context, View rootView) {
+            this.context = context;
+            this.rootView = rootView;
+        }
+
 
         @Override
         protected void onPreExecute() {
@@ -351,12 +346,13 @@ public class MovieDetailActivityFragment extends Fragment {
 
             ArrayList<ReviewItem> reviewsResults = new ArrayList<>();
 
+
             for(int i = 0; i < reviewsArray.length(); i++) {
                 String reviewer = reviewsArray.getJSONObject(i).getString("author");
                 String review = reviewsArray.getJSONObject(i).getString("content");
 
-                //Log.v("review", reviewsArray.getJSONObject(i).getString("author"));
-
+                ReviewItem item = new ReviewItem(reviewer, review);
+                item.populateView(context, rootView);
                 reviewsResults.add(i, new ReviewItem(reviewer, review));
             }
 
@@ -367,25 +363,11 @@ public class MovieDetailActivityFragment extends Fragment {
         protected void onPostExecute(ArrayList<ReviewItem> reviews) {
             super.onPostExecute(reviews);
 
-            if (reviews != null) {
-                reviewsAdapter.clear();
-
-                ListView reviewList = (ListView) getActivity().findViewById(R.id.review_list);
-                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) reviewList.getLayoutParams();
-
-                int pixels = (int) TypedValue.applyDimension(
-                        TypedValue.COMPLEX_UNIT_DIP, 100, getActivity().getResources()
-                                .getDisplayMetrics());
-                Toast.makeText(getActivity(), Integer.toString(pixels), Toast.LENGTH_SHORT).show();
-                params.height = (pixels*reviews.size())+(2*reviews.size());
-                reviewList.setLayoutParams(params);
-                reviewList.requestLayout();
-
-                reviewsAdapter.addAll(reviews);
-                allReviews = reviews;
-
+            if (reviews.size() != 0) {
+                rootView.findViewById(R.id.no_review).setVisibility(View.GONE);
             } else {
-                //review_message.setText(R.string.no_review);
+                TextView review_message = (TextView) rootView.findViewById(R.id.no_review);
+                review_message.setText(R.string.no_review);
             }
         }
 

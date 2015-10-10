@@ -3,20 +3,24 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:focusable="false"
-    android:focusableInTouchMode="false">
+    android:focusableInTouchMode="false"
+    android:paddingTop="10dp">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:id="@+id/reviewer_name"
-        android:background="#FFFFFFFF"
-        android:textStyle="bold|italic" />
+        android:background="#0E678A"
+        android:textStyle="bold|italic"
+        android:paddingLeft="3dp"
+        android:textColor="#ffffff" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:id="@+id/review" />
+        android:id="@+id/review"
+        android:paddingLeft="10dp" />
 
 </LinearLayout>

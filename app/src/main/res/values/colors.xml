@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background_pressed">#440E678A</color> <!--yellow-->
+    <color name="background_focused">#440E678A</color>    <!--blue-->
+</resources>
