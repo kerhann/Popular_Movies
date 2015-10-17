@@ -5,10 +5,12 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -27,9 +29,11 @@ public class VideoItem extends ArrayList{
     }
 
 
-    public void populateView(final Context context, View rootView) {
-        LinearLayout linearVideos = (LinearLayout) rootView.findViewById(R.id.linearVideo);
+    public void populateView(final View v, final Context context) {
+        LinearLayout linearVideos = (LinearLayout) v.findViewById(R.id.linearVideo);
         View videoItemView = LayoutInflater.from(context).inflate(R.layout.video_item, null);
+
+        Toast.makeText(context, context.toString(), Toast.LENGTH_SHORT).show();
 
         TextView videoNameTextView = (TextView) videoItemView.findViewById(R.id.video_name);
         videoNameTextView.setText(videoName);

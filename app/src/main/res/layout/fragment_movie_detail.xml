@@ -109,6 +109,7 @@
             android:id="@+id/linearVideo"
             android:layout_below="@+id/overviewDetailTextView"
             android:orientation="vertical">
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -124,15 +125,6 @@
             android:text="@string/loading"
             android:id="@+id/trailer_not_available"
             android:layout_below="@+id/trailerTextView"/>
-
-        <ListView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:layout_below="@+id/trailer_not_available"
-            android:layout_marginTop="10dp"
-            android:id="@+id/video_list">
-        </ListView>
 
         </LinearLayout>
 
@@ -160,22 +152,6 @@
                 android:text="@string/loading"
                 android:id="@+id/no_review"
                 android:layout_marginTop="10dp" />
-
-            <ListView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:id="@+id/review_list" />
-<!--
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="@string/more_reviews"
-                android:id="@+id/textView4"
-                android:layout_gravity="center_horizontal"
-                android:textStyle="bold"
-                android:textColor="#0e678a" />-->
 
         </LinearLayout>
 

@@ -1,17 +1,20 @@
 package be.julot.popularmovies;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RatingBar;
 import android.widget.TextView;
@@ -44,8 +47,6 @@ public class MovieDetailActivityFragment extends Fragment {
 
     private ArrayList<VideoItem> allVideos = new ArrayList<>();
     private ArrayList<ReviewItem> allReviews = new ArrayList<>();
-    private VideoAdapter videosAdapter;
-    private ReviewAdapter reviewsAdapter;
     public MoviePosterItem movie;
 
 
@@ -61,33 +62,42 @@ public class MovieDetailActivityFragment extends Fragment {
         //Trying Butter Knife
         ButterKnife.bind(this, rootView);
 
-        //Get the movie details received via intent...
-        movie = (MoviePosterItem) getActivity().getIntent().getParcelableArrayListExtra(Intent.EXTRA_TEXT);
-        //... and put them into the view
-        fillMovieFields(movie, rootView);
-        //Check if movie is a favorite...
-        DB_Favorite_Movies favorite = getFavorite(movie.tmdb_ID);
-        //...and update the favorite button accordingly if it is a favorite
-        updateFavoriteButton(favorite != null, rootView);
+        Intent intent = getActivity().getIntent();
+        movie = (MoviePosterItem) intent.getParcelableArrayListExtra(Intent.EXTRA_TEXT);
 
-        //Create the adapter for the list of trailers & videos
-        videosAdapter = new VideoAdapter(getActivity(), allVideos);
-        //It is not a good practice to put a scrollable view (listview) into another scrollable
-        //view (scrollview), but I chose to do so and adapt the video listview's height so that
-        //it is never scrollable (height is always equal to sum of all videos and trailers).
-        ListView videoList = (ListView) rootView.findViewById(R.id.video_list);
-        videoList.setAdapter(videosAdapter);
-        //Finally, get the videos & trailers
-        FetchVideos getVideos = new FetchVideos(getActivity(), rootView);
-        getVideos.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, String.valueOf(movie.tmdb_ID), "en");
+        if (movie == null) {
+            Toast.makeText(getActivity(), "OK OK", Toast.LENGTH_SHORT).show();
+            return null;
+        }
+        else {
+            //Get the movie details received via intent...
 
-        //Same thing for list of reviews
-        reviewsAdapter = new ReviewAdapter(getActivity(), allReviews);
-        ListView reviewList = (ListView) rootView.findViewById(R.id.review_list);
-        reviewList.setAdapter(reviewsAdapter);
-        //and get the reviews
-        FetchReviews getReviews = new FetchReviews(getActivity(), rootView);
-        getReviews.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, String.valueOf(movie.tmdb_ID), "en");
+            //... and put them into the view
+            fillMovieFields(movie, rootView);
+            //Check if movie is a favorite...
+            DB_Favorite_Movies favorite = getFavorite(movie.tmdb_ID);
+            //...and update the favorite button accordingly if it is a favorite
+            updateFavoriteButton(favorite != null, rootView);
+
+            //Create the adapter for the list of trailers & videos
+//            VideoAdapter videosAdapter = new VideoAdapter(getActivity(), allVideos);
+//            //It is not a good practice to put a scrollable view (listview) into another scrollable
+//            //view (scrollview), but I chose to do so and adapt the video listview's height so that
+//            //it is never scrollable (height is always equal to sum of all videos and trailers).
+//            ListView videoList = (ListView) rootView.findViewById(R.id.video_list);
+//            videoList.setAdapter(videosAdapter);
+            //Finally, get the videos & trailers
+            FetchVideos getVideos = new FetchVideos(getActivity(), rootView);
+            getVideos.execute(String.valueOf(movie.tmdb_ID), "en");
+
+//            //Same thing for list of reviews
+//            ReviewAdapter reviewsAdapter = new ReviewAdapter(getActivity(), allReviews);
+//            ListView reviewList = (ListView) rootView.findViewById(R.id.review_list);
+//            reviewList.setAdapter(reviewsAdapter);
+            //and get the reviews
+            FetchReviews getReviews = new FetchReviews(getActivity(), rootView);
+            getReviews.execute(String.valueOf(movie.tmdb_ID), "en");
+        }
 
         return rootView;
     }
@@ -119,7 +129,6 @@ public class MovieDetailActivityFragment extends Fragment {
 
     public class FetchVideos extends AsyncTask<String, Void, ArrayList<VideoItem>> {
 
-        private String IOMessage;
         private Context context;
         private View rootView;
 
@@ -187,7 +196,6 @@ public class MovieDetailActivityFragment extends Fragment {
 
             } catch (IOException e) {
                 e.printStackTrace();
-                IOMessage = e.getMessage() + "\n\n" + Log.getStackTraceString(e.getCause());
                 return null;
             } finally {
                 if (urlConnection != null) {
@@ -224,8 +232,46 @@ public class MovieDetailActivityFragment extends Fragment {
                 String site = videosArray.getJSONObject(i).getString("site");
                 String type = videosArray.getJSONObject(i).getString("type");
 
-                VideoItem item = new VideoItem(site, name, key, type);
-                item.populateView(context, rootView);
+                final VideoItem item = new VideoItem(site, name, key, type);
+
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        LinearLayout linearVideos = (LinearLayout) getActivity().findViewById(R.id.linearVideo);
+                        View videoItemView = LayoutInflater.from(context).inflate(R.layout.video_item, null);
+
+                        Toast.makeText(context, context.toString(), Toast.LENGTH_SHORT).show();
+
+                        TextView videoNameTextView = (TextView) videoItemView.findViewById(R.id.video_name);
+                        videoNameTextView.setText(item.videoName);
+
+                        LinearLayout wholeCellVideo = (LinearLayout) videoItemView.findViewById(R.id.wholeCellVideo);
+
+                        wholeCellVideo.setOnClickListener(new View.OnClickListener() {
+
+                                                              @Override
+                                                              public void onClick(View v) {
+                                                                  try {
+                                                                      Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + item.videoKey));
+                                                                      context.startActivity(intent);
+                                                                  } catch (ActivityNotFoundException exception) {
+                                                                      Intent intent = new Intent(Intent.ACTION_VIEW,
+                                                                              Uri.parse("http://www.youtube.com/watch?v=" + item.videoKey));
+                                                                      context.startActivity(intent);
+                                                                  }
+
+                                                              }
+
+                                                          }
+                        );
+
+                        linearVideos.addView(videoItemView);
+                        //item.populateView(rootView, context);
+
+                    }
+                });
+
 
                 videosResults.add(i, new VideoItem(site, name, key, type));
             }
@@ -250,7 +296,6 @@ public class MovieDetailActivityFragment extends Fragment {
 
     public class FetchReviews extends AsyncTask<String, Void, ArrayList<ReviewItem>> {
 
-        private String IOMessage;
         private Context context;
         private View rootView;
 
@@ -315,7 +360,6 @@ public class MovieDetailActivityFragment extends Fragment {
 
             } catch (IOException e) {
                 e.printStackTrace();
-                IOMessage = e.getMessage() + "\n\n" + Log.getStackTraceString(e.getCause());
                 return null;
             } finally {
                 if (urlConnection != null) {
@@ -346,13 +390,26 @@ public class MovieDetailActivityFragment extends Fragment {
 
             ArrayList<ReviewItem> reviewsResults = new ArrayList<>();
 
+            if(reviewsArray.length() == 0) {
+
+            }
 
             for(int i = 0; i < reviewsArray.length(); i++) {
                 String reviewer = reviewsArray.getJSONObject(i).getString("author");
                 String review = reviewsArray.getJSONObject(i).getString("content");
 
-                ReviewItem item = new ReviewItem(reviewer, review);
-                item.populateView(context, rootView);
+                final ReviewItem item = new ReviewItem(reviewer, review);
+                final ReviewItem item_for_thread = item;
+
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        item.populateView(getView(), context);
+
+                    }
+                });
+
                 reviewsResults.add(i, new ReviewItem(reviewer, review));
             }
 

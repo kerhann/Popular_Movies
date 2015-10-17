@@ -1,6 +1,7 @@
 package be.julot.popularmovies;
 
 import android.annotation.TargetApi;
+import android.app.ListFragment;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -15,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridView;
+import android.widget.ListView;
 
 import com.activeandroid.query.Select;
 
@@ -40,7 +42,7 @@ import java.util.Objects;
 
 public class PosterGridFragment extends Fragment {
     public final String API_KEY = "d02afd0919d8034eee26567d22343d36";
-
+    private boolean mDualPane;
     private MoviePosterItemAdapter moviePosterAdapter;
     //Insert API key here
     public String sortby_pref;

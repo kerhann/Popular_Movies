@@ -3,6 +3,8 @@ package be.julot.popularmovies;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +18,8 @@ import com.squareup.picasso.Picasso;
 import java.util.List;
 
 public class MoviePosterItemAdapter extends ArrayAdapter<MoviePosterItem> {
+
+    private static final String DETAILFRAGMENT_TAG = "DFTAG";
 
     public MoviePosterItemAdapter(Activity context, List<MoviePosterItem> moviePosterItems) {
         super(context, 0, moviePosterItems);
@@ -54,9 +58,14 @@ public class MoviePosterItemAdapter extends ArrayAdapter<MoviePosterItem> {
 
                                     @Override
                                     public void onClick(View v) {
-                                        Intent detailIntent = new Intent(getContext(), MovieDetailActivity.class)
-                                                .putParcelableArrayListExtra(Intent.EXTRA_TEXT, moviePosterItem);
-                                        getContext().startActivity(detailIntent);
+
+                                        ((FragmentActivity)getContext()).getSupportFragmentManager().beginTransaction()
+                                                .replace(R.id.movie_detail_container, new MovieDetailActivityFragment(), DETAILFRAGMENT_TAG)
+                                                .commit();
+
+                                        //Intent detailIntent = new Intent(getContext(), MovieDetailActivity.class)
+                                          //      .putParcelableArrayListExtra(Intent.EXTRA_TEXT, moviePosterItem);
+                                        //getContext().startActivity(detailIntent);
                                     }
 
                                 }
