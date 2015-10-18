@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.Loader;
 import android.util.Log;
@@ -43,11 +44,13 @@ import butterknife.OnClick;
  * A placeholder fragment containing a simple view.
  */
 public class MovieDetailActivityFragment extends Fragment {
+    public Parcelable MOVIE = null;
     public final String API_KEY = "d02afd0919d8034eee26567d22343d36";
+    public static final String MOVIE_TAG = "movie_tag";
 
     private ArrayList<VideoItem> allVideos = new ArrayList<>();
     private ArrayList<ReviewItem> allReviews = new ArrayList<>();
-    public MoviePosterItem movie;
+    public static MoviePosterItem movie;
 
 
 
@@ -66,12 +69,16 @@ public class MovieDetailActivityFragment extends Fragment {
         movie = (MoviePosterItem) intent.getParcelableArrayListExtra(Intent.EXTRA_TEXT);
 
         if (movie == null) {
-            Toast.makeText(getActivity(), "OK OK", Toast.LENGTH_SHORT).show();
-            return null;
+            Bundle bundle = getArguments();
+            if(bundle != null) {
+                movie = bundle.getParcelable(MOVIE_TAG);
+            }
+            else {
+                return rootView;
+            }
         }
-        else {
-            //Get the movie details received via intent...
 
+            //Get the movie details received via intent...
             //... and put them into the view
             fillMovieFields(movie, rootView);
             //Check if movie is a favorite...
@@ -97,7 +104,6 @@ public class MovieDetailActivityFragment extends Fragment {
             //and get the reviews
             FetchReviews getReviews = new FetchReviews(getActivity(), rootView);
             getReviews.execute(String.valueOf(movie.tmdb_ID), "en");
-        }
 
         return rootView;
     }
@@ -240,8 +246,6 @@ public class MovieDetailActivityFragment extends Fragment {
 
                         LinearLayout linearVideos = (LinearLayout) getActivity().findViewById(R.id.linearVideo);
                         View videoItemView = LayoutInflater.from(context).inflate(R.layout.video_item, null);
-
-                        Toast.makeText(context, context.toString(), Toast.LENGTH_SHORT).show();
 
                         TextView videoNameTextView = (TextView) videoItemView.findViewById(R.id.video_name);
                         videoNameTextView.setText(item.videoName);

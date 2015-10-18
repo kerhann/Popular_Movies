@@ -4,5 +4,4 @@
     tools:contex="be.julot.popularmovies.PosterGridFragment"
     tools:layout="@android:layout/list_content"
     android:layout_width="match_parent" android:layout_height="match_parent"
-    tools:context=".MainActivity" tools:ignore="MergeRootFrame"
-    xmlns:fresco="http://schemas.android.com/apk/res-auto" />
+    tools:context=".MainActivity" tools:ignore="MergeRootFrame" />

@@ -3,6 +3,7 @@ package be.julot.popularmovies;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
@@ -19,10 +20,12 @@ import java.util.List;
 
 public class MoviePosterItemAdapter extends ArrayAdapter<MoviePosterItem> {
 
+    private boolean twoPane;
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
 
-    public MoviePosterItemAdapter(Activity context, List<MoviePosterItem> moviePosterItems) {
+    public MoviePosterItemAdapter(Activity context, List<MoviePosterItem> moviePosterItems, boolean twoPane) {
         super(context, 0, moviePosterItems);
+        this.twoPane = twoPane;
     }
 
     @Override
@@ -59,13 +62,25 @@ public class MoviePosterItemAdapter extends ArrayAdapter<MoviePosterItem> {
                                     @Override
                                     public void onClick(View v) {
 
-                                        ((FragmentActivity)getContext()).getSupportFragmentManager().beginTransaction()
-                                                .replace(R.id.movie_detail_container, new MovieDetailActivityFragment(), DETAILFRAGMENT_TAG)
-                                                .commit();
+                                        if(twoPane)
+                                        {
 
-                                        //Intent detailIntent = new Intent(getContext(), MovieDetailActivity.class)
-                                          //      .putParcelableArrayListExtra(Intent.EXTRA_TEXT, moviePosterItem);
-                                        //getContext().startActivity(detailIntent);
+                                            Bundle args = new Bundle();
+                                            args.putParcelable(MovieDetailActivityFragment.MOVIE_TAG, moviePosterItem);
+
+                                            MovieDetailActivityFragment fragment = new MovieDetailActivityFragment();
+                                            fragment.setArguments(args);
+
+                                                    ((FragmentActivity) getContext()).getSupportFragmentManager().beginTransaction()
+                                                    .replace(R.id.movie_detail_container, fragment, DETAILFRAGMENT_TAG)
+                                                    .commit();
+                                        }
+                                        else {
+                                            Intent detailIntent = new Intent(getContext(), MovieDetailActivity.class)
+                                                  .putParcelableArrayListExtra(Intent.EXTRA_TEXT, moviePosterItem);
+                                            getContext().startActivity(detailIntent);
+                                        }
+
                                     }
 
                                 }
