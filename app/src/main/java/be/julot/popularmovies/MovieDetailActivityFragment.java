@@ -86,22 +86,11 @@ public class MovieDetailActivityFragment extends Fragment {
             //...and update the favorite button accordingly if it is a favorite
             updateFavoriteButton(favorite != null, rootView);
 
-            //Create the adapter for the list of trailers & videos
-//            VideoAdapter videosAdapter = new VideoAdapter(getActivity(), allVideos);
-//            //It is not a good practice to put a scrollable view (listview) into another scrollable
-//            //view (scrollview), but I chose to do so and adapt the video listview's height so that
-//            //it is never scrollable (height is always equal to sum of all videos and trailers).
-//            ListView videoList = (ListView) rootView.findViewById(R.id.video_list);
-//            videoList.setAdapter(videosAdapter);
             //Finally, get the videos & trailers
+            //Note that
             FetchVideos getVideos = new FetchVideos(getActivity(), rootView);
             getVideos.execute(String.valueOf(movie.tmdb_ID), "en");
 
-//            //Same thing for list of reviews
-//            ReviewAdapter reviewsAdapter = new ReviewAdapter(getActivity(), allReviews);
-//            ListView reviewList = (ListView) rootView.findViewById(R.id.review_list);
-//            reviewList.setAdapter(reviewsAdapter);
-            //and get the reviews
             FetchReviews getReviews = new FetchReviews(getActivity(), rootView);
             getReviews.execute(String.valueOf(movie.tmdb_ID), "en");
 
@@ -451,9 +440,9 @@ public class MovieDetailActivityFragment extends Fragment {
         }
         voteCountTextView.setText("(" + Integer.toString(movie.movieVoteCount) + ")");
         if(movie.movieOverview != null) {
-            overviewTextView.setText(movie.movieOverview); //allows to display the default value in
-            // strings.xml (not displaying "null")
-            // if no overview is available
+            overviewTextView.setText(movie.movieOverview);  //allows to display value in
+                                                            // strings.xml (not displaying "null")
+                                                            // if no overview is available
         }
         ratingBar.setRating(movie.movieRating / 2); //converting a 10-based value to 5-star rating
     }

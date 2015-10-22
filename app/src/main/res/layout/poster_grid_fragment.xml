@@ -76,6 +76,7 @@
         android:numColumns="auto_fit"
         android:id="@+id/movie_grid"
         android:clickable="true"
-        android:columnWidth="150dp" />
+        android:columnWidth="150dp"
+        android:listSelector="@drawable/gridview_selector"/>
 
 </LinearLayout>

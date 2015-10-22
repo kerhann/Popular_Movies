@@ -18,7 +18,7 @@ import android.widget.TextView;
 import java.util.List;
 
 
-public class VideoAdapter extends ArrayAdapter<VideoItem> {
+public class VideoAdapter extends ArrayAdapter<VideoItem> implements Runnable {
 
     private int selectedItem = -1;
 
@@ -88,4 +88,8 @@ public class VideoAdapter extends ArrayAdapter<VideoItem> {
         }
     }
 
+    @Override
+    public void run() {
+
+    }
 }

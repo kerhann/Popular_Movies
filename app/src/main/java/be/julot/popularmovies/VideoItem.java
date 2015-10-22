@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -39,6 +40,18 @@ public class VideoItem extends ArrayList{
         videoNameTextView.setText(videoName);
 
         LinearLayout wholeCellVideo = (LinearLayout) videoItemView.findViewById(R.id.wholeCellVideo);
+
+        wholeCellVideo.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(hasFocus) {
+                    v.setBackgroundResource(R.color.background_pressed);
+                }
+                else {
+                    v.setBackgroundResource(R.color.blue_theme);
+                }
+            }
+        });
 
         wholeCellVideo.setOnClickListener(new View.OnClickListener() {
 
