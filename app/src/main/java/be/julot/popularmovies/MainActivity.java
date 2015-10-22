@@ -44,11 +44,12 @@ import java.util.Objects;
 public class MainActivity extends AppCompatActivity {
 
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
-    private boolean mTwoPane;
     public final String API_KEY = "d02afd0919d8034eee26567d22343d36";
     public MoviePosterItemAdapter moviePosterAdapter;
     public String sortby_pref;
     private ArrayList<MoviePosterItem> moviePosterItems = new ArrayList<>();
+    private boolean no_movie_selected = false;
+
 
     //I chose to define a boolean to know if update of the grid is necessary. In doubt, it is "yes".
     //Other factors may in the future also change this boolean, such as the fact that the grid
@@ -59,24 +60,21 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (savedInstanceState != null && savedInstanceState.containsKey("moviePosterItems")) {
+        setContentView(R.layout.activity_main);
+
+
+        if (savedInstanceState != null && savedInstanceState.containsKey("moviePosterItems") && savedInstanceState.containsKey("no_movie_selected")) {
             moviePosterItems = savedInstanceState.getParcelableArrayList("moviePosterItems");
+            no_movie_selected = savedInstanceState.getBoolean("no_movie_selected");
             updateNecessary = false;
         }
 
-        setContentView(R.layout.activity_main);
+        boolean mTwoPane;
         if (findViewById(R.id.movie_detail_container) != null) {
-            // The detail container view will be present only in the large-screen layouts
-            // (res/layout-sw600dp). If this view is present, then the activity should be
-            // in two-pane mode.
             mTwoPane = true;
-            // In two-pane mode, show the detail view in this activity by
-            // adding or replacing the detail fragment using a
-            // fragment transaction.
-            if (savedInstanceState == null) {
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.movie_detail_container, new MovieDetailActivityFragment(), DETAILFRAGMENT_TAG)
-                        .commit();
+            if (savedInstanceState == null || no_movie_selected) {
+                this.findViewById(R.id.no_movie_selected).setVisibility(View.VISIBLE);
+                no_movie_selected = true;
             }
         } else {
             mTwoPane = false;
@@ -101,6 +99,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onSaveInstanceState(Bundle byeState) {
         byeState.putParcelableArrayList("moviePosterItems", moviePosterItems);
+        if(this.findViewById(R.id.no_movie_selected).getVisibility() == View.GONE) {
+            no_movie_selected = false;
+        }
+        byeState.putBoolean("no_movie_selected", no_movie_selected);
         super.onSaveInstanceState(byeState);
     }
 

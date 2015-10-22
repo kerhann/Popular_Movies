@@ -31,4 +31,5 @@
     <string name="no_review">There is no review for this movie</string>
     <string name="movie_poster_image_content_description">Movie poster</string>
     <string name="reviews">Reviews</string>
+    <string name="select_movie">Please select a movie</string>
 </resources>

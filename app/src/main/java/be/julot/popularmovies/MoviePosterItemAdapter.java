@@ -65,15 +65,14 @@ public class MoviePosterItemAdapter extends ArrayAdapter<MoviePosterItem> {
 
                                         if(twoPane)
                                         {
-
-
                                             Bundle args = new Bundle();
                                             args.putParcelable(MovieDetailActivityFragment.MOVIE_TAG, moviePosterItem);
 
                                             MovieDetailActivityFragment fragment = new MovieDetailActivityFragment();
                                             fragment.setArguments(args);
 
-                                                    ((FragmentActivity) getContext()).getSupportFragmentManager().beginTransaction()
+                                            ((FragmentActivity) getContext()).findViewById(R.id.no_movie_selected).setVisibility(View.GONE);
+                                            ((FragmentActivity) getContext()).getSupportFragmentManager().beginTransaction()
                                                     .replace(R.id.movie_detail_container, fragment, DETAILFRAGMENT_TAG)
                                                     .commit();
                                         }

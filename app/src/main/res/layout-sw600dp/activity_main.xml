@@ -9,7 +9,7 @@
     android:id="@+id/dualPaneLayout">
 
     <fragment
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="2"
         android:id="@+id/poster_grid_fragment"
@@ -17,10 +17,24 @@
         tools:layout="@android:layout/list_content"/>
 
     <FrameLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="4"
-        android:id="@+id/movie_detail_container"/>
+        android:id="@+id/movie_detail_container"
+        android:layout_weight="1">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/select_movie"
+            android:layout_gravity="center"
+            android:textAlignment="center"
+            android:singleLine="false"
+            android:textSize="@dimen/abc_text_size_large_material"
+            style="@style/Base.TextAppearance.AppCompat.Display3"
+            android:id="@+id/no_movie_selected"
+            android:visibility="gone"/>
+
+    </FrameLayout>
 
 
 </LinearLayout>
