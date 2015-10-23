@@ -11,13 +11,10 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.GridView;
-import android.widget.Toast;
 
 import com.activeandroid.query.Select;
 
@@ -49,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     public String sortby_pref;
     private ArrayList<MoviePosterItem> moviePosterItems = new ArrayList<>();
     private boolean no_movie_selected = false;
+    private boolean mTwoPane;
 
 
     //I chose to define a boolean to know if update of the grid is necessary. In doubt, it is "yes".
@@ -69,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
             updateNecessary = false;
         }
 
-        boolean mTwoPane;
+
         if (findViewById(R.id.movie_detail_container) != null) {
             mTwoPane = true;
             if (savedInstanceState == null || no_movie_selected) {
@@ -99,9 +97,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onSaveInstanceState(Bundle byeState) {
         byeState.putParcelableArrayList("moviePosterItems", moviePosterItems);
-        if(this.findViewById(R.id.no_movie_selected).getVisibility() == View.GONE) {
-            no_movie_selected = false;
+        if(mTwoPane) {
+            if(this.findViewById(R.id.no_movie_selected).getVisibility() == View.GONE) {
+                no_movie_selected = false;
+            }
         }
+
         byeState.putBoolean("no_movie_selected", no_movie_selected);
         super.onSaveInstanceState(byeState);
     }
