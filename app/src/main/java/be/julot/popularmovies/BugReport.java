@@ -36,7 +36,7 @@ public class BugReport {
         try {
             this.context.startActivity(Intent.createChooser(emailIntent, "Send mail..."));
         } catch (android.content.ActivityNotFoundException exception) {
-            Toast.makeText(this.context, "No email client seems to be installed", Toast.LENGTH_LONG);
+            Toast.makeText(this.context, "No email client seems to be installed", Toast.LENGTH_LONG).show();
         }
 
     }

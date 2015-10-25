@@ -319,7 +319,6 @@ public class MainActivity extends AppCompatActivity {
             super.onPostExecute(moviePosters);
             MainActivity.this.findViewById(R.id.no_favorites).setVisibility(View.GONE);
 
-
             if (dialog.isShowing()) {
                 dialog.dismiss();
             }
@@ -330,38 +329,12 @@ public class MainActivity extends AppCompatActivity {
             }
             else {
                 moviePosterAdapter.clear();
-                if(Objects.equals(sortby_pref, "favorites"))
-                {
+                if(Objects.equals(sortby_pref, "favorites")) {
                     MainActivity.this.findViewById(R.id.no_favorites).setVisibility(View.VISIBLE);
                 } else {
-                    MainActivity.this.findViewById(R.id.error_reporting).setVisibility(View.VISIBLE);
-
-                    View tryAgainButton = MainActivity.this.findViewById(R.id.button_try);
-                    tryAgainButton.setOnClickListener(new View.OnClickListener() {
-
-                        @Override
-                        public void onClick(View view) {
-                            Intent intent = MainActivity.this.getIntent();
-                            MainActivity.this.finish();
-                            startActivity(intent);
-
-                        }
-
-                    });
-
-
-                    final Date now = new Date();
-                    View bugReportButton = MainActivity.this.findViewById(R.id.button_bug);
-                    bugReportButton.setOnClickListener(new View.OnClickListener() {
-
-                        @Override
-                        public void onClick(View view) {
-                            BugReport bugReport = new BugReport("Bug report", IOMessage, "jferet@gmail.com", now, MainActivity.this);
-                            bugReport.Send();
-                        }
-
-                    });
-
+                    Intent bugReportingIntent = new Intent(MainActivity.this, BugReporting.class)
+                            .putExtra("IOMessage", IOMessage);
+                    MainActivity.this.startActivity(bugReportingIntent);
                 }
             }
         }

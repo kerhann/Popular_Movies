@@ -2,7 +2,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/scrollView"
+    android:id="@+id/detailScrollview"
     android:layout_centerHorizontal="true"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
@@ -41,9 +41,9 @@
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="@string/movieYearDetail"
             android:id="@+id/yearTextView"
-            android:layout_alignTop="@+id/posterImageDetail"
-            android:layout_toRightOf="@+id/posterImageDetail"
-            android:layout_marginRight="10dp"/>
+            android:layout_below="@+id/titleTextView"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
 
     <RatingBar
         android:layout_width="wrap_content"
@@ -72,7 +72,7 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="@string/overviewTitle"
         android:id="@+id/overviewTitleTextView"
-        android:textStyle="italic"
+        android:textStyle="bold|italic"
         android:layout_below="@+id/button_Favorite"
         android:layout_toRightOf="@+id/posterImageDetail"
         android:layout_toEndOf="@+id/posterImageDetail"
@@ -96,11 +96,10 @@
             android:id="@+id/button_Favorite"
             android:background="#0e678a"
             android:padding="5dp"
-            android:layout_below="@+id/yearTextView"
-            android:layout_toRightOf="@+id/posterImageDetail"
-            android:layout_toEndOf="@+id/posterImageDetail"
-            android:layout_marginTop="35dp"
-            android:textColor="#ffffff" />
+            android:textColor="#ffffff"
+            android:layout_alignTop="@+id/posterImageDetail"
+            android:layout_alignLeft="@+id/overviewTitleTextView"
+            android:layout_alignStart="@+id/overviewTitleTextView" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -116,7 +115,7 @@
                 android:text="@string/trailers"
                 android:id="@+id/trailerTextView"
                 android:layout_marginTop="20dp"
-                android:textStyle="italic" />
+                android:textStyle="bold|italic" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -142,7 +141,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/reviews"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textStyle="italic" />
+                android:textStyle="bold|italic" />
 
             <TextView
                 android:layout_width="wrap_content"

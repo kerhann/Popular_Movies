@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_margin="20dp"
+    android:id="@+id/error_reporting"
+    tools:context="be.julot.popularmovies.BugReporting"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+<TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:textAppearance="?android:attr/textAppearanceLarge"
+    android:text="@string/error_title"
+    android:id="@+id/textView"
+    android:layout_gravity="center_horizontal"
+    android:gravity="center"
+    android:layout_marginBottom="30dp"/>
+
+<TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:textAppearance="?android:attr/textAppearanceSmall"
+    android:text="@string/connection_error_message"
+    android:id="@+id/textView2"
+    android:gravity="center"
+    android:layout_gravity="center_horizontal" />
+
+<Button
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="@string/try_again"
+    android:id="@+id/button_try"
+    android:layout_gravity="center_horizontal"
+    android:layout_marginBottom="50dp" />
+
+<TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:textAppearance="?android:attr/textAppearanceSmall"
+    android:text="@string/bug_report_message"
+    android:id="@+id/textView3"
+    android:gravity="center"
+    android:layout_gravity="center_horizontal" />
+
+
+<Button
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="@string/bug_report"
+    android:id="@+id/button_bug"
+    android:layout_gravity="center_horizontal" />
+
+</LinearLayout>

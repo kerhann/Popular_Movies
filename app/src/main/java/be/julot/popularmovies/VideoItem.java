@@ -5,6 +5,8 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -15,7 +17,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
-public class VideoItem extends ArrayList{
+public class VideoItem extends ArrayList<Parcelable> implements Parcelable {
 
     public String videoSite;
     public String videoName;
@@ -29,6 +31,25 @@ public class VideoItem extends ArrayList{
         this.videoType = vType;
     }
 
+
+    protected VideoItem(Parcel in) {
+        videoSite = in.readString();
+        videoName = in.readString();
+        videoKey = in.readString();
+        videoType = in.readString();
+    }
+
+    public static final Creator<VideoItem> CREATOR = new Creator<VideoItem>() {
+        @Override
+        public VideoItem createFromParcel(Parcel in) {
+            return new VideoItem(in);
+        }
+
+        @Override
+        public VideoItem[] newArray(int size) {
+            return new VideoItem[size];
+        }
+    };
 
     public void populateView(final View v, final Context context) {
         LinearLayout linearVideos = (LinearLayout) v.findViewById(R.id.linearVideo);
@@ -75,4 +96,16 @@ public class VideoItem extends ArrayList{
 
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(videoSite);
+        dest.writeString(videoName);
+        dest.writeString(videoKey);
+        dest.writeString(videoType);
+    }
 }

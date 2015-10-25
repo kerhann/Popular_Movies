@@ -2,13 +2,17 @@ package be.julot.popularmovies;
 
 
 import android.content.Context;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-public class ReviewItem {
+import java.util.ArrayList;
+
+public class ReviewItem extends ArrayList<Parcelable> implements Parcelable {
 
     public String reviewer;
     public String review;
@@ -18,6 +22,34 @@ public class ReviewItem {
         this.reviewer = reviewer;
         this.review = review;
 
+    }
+
+    public static final Creator<ReviewItem> CREATOR = new Creator<ReviewItem>() {
+        @Override
+        public ReviewItem createFromParcel(Parcel in) {
+            return new ReviewItem(in);
+        }
+
+        @Override
+        public ReviewItem[] newArray(int size) {
+            return new ReviewItem[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    protected ReviewItem(Parcel in) {
+        reviewer = in.readString();
+        review = in.readString();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(reviewer);
+        dest.writeString(review);
     }
 
     public void populateView(View v, Context context) {
@@ -33,5 +65,4 @@ public class ReviewItem {
         linearReviews.addView(reviewItemView);
 
     }
-
 }

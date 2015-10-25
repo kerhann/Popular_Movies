@@ -3,21 +3,26 @@ package be.julot.popularmovies;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.Loader;
 import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RatingBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -51,8 +56,7 @@ public class MovieDetailActivityFragment extends Fragment {
     private ArrayList<VideoItem> allVideos = new ArrayList<>();
     private ArrayList<ReviewItem> allReviews = new ArrayList<>();
     public static MoviePosterItem movie;
-
-
+    private int savedScrollPosition = 0;
 
     public MovieDetailActivityFragment() {
     }
@@ -78,23 +82,59 @@ public class MovieDetailActivityFragment extends Fragment {
             }
         }
 
-            //Get the movie details received via intent...
-            //... and put them into the view
-            fillMovieFields(movie, rootView);
-            //Check if movie is a favorite...
-            DB_Favorite_Movies favorite = getFavorite(movie.tmdb_ID);
-            //...and update the favorite button accordingly if it is a favorite
-            updateFavoriteButton(favorite != null, rootView);
+        fillMovieFields(movie, rootView);
 
-            //Finally, get the videos & trailers
-            //Note that
-            FetchVideos getVideos = new FetchVideos(getActivity(), rootView);
-            getVideos.execute(String.valueOf(movie.tmdb_ID), "en");
-
-            FetchReviews getReviews = new FetchReviews(getActivity(), rootView);
-            getReviews.execute(String.valueOf(movie.tmdb_ID), "en");
+        DB_Favorite_Movies favorite = getFavorite(movie.tmdb_ID);
+        updateFavoriteButton(favorite != null, rootView);
 
         return rootView;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle byeState) {
+        super.onSaveInstanceState(byeState);
+        ScrollView detailView = (ScrollView) getActivity().findViewById(R.id.detailScrollview);
+        int scrollPositionToSave = detailView.getScrollY();
+        byeState.putInt("scrollPosition", scrollPositionToSave);
+        byeState.putParcelableArrayList("allVideos", allVideos);
+        byeState.putParcelableArrayList("allReviews", allReviews);
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (savedInstanceState != null) {
+            savedScrollPosition = savedInstanceState.getInt("scrollPosition", 0);
+        }
+
+        //Finally, get the videos & trailers
+        if(savedInstanceState == null || !savedInstanceState.containsKey("allVideos")) {
+            FetchVideos getVideos = new FetchVideos(getActivity(), getView());
+            getVideos.execute(String.valueOf(movie.tmdb_ID), "en");
+        }
+        else {
+            allVideos = savedInstanceState.<VideoItem>getParcelableArrayList("allVideos");
+            populateVideoList(allVideos);
+        }
+
+        if(savedInstanceState == null || !savedInstanceState.containsKey("allReviews")) {
+            FetchReviews getReviews = new FetchReviews(getActivity(), getView());
+            getReviews.execute(String.valueOf(movie.tmdb_ID), "en");
+        }
+        else {
+            allReviews = savedInstanceState.<ReviewItem>getParcelableArrayList("allReviews");
+            populateReviewList(allReviews);
+            scrollOnView((ScrollView) getActivity().findViewById(R.id.detailScrollview), savedScrollPosition);
+        }
+
+    }
+
+    private final void scrollOnView(final ScrollView scrollView, final int scrollPosition){
+        scrollView.post(new Runnable() {
+            public void run() {
+                scrollView.smoothScrollTo(0, scrollPosition);
+            }
+        });
     }
 
     @OnClick(R.id.button_Favorite)
@@ -137,7 +177,6 @@ public class MovieDetailActivityFragment extends Fragment {
         /** application context. */
         @Override
         protected void onPreExecute() {
-            //trailer_message.setText(R.string.video_loading);
         }
 
         @Override
@@ -219,72 +258,83 @@ public class MovieDetailActivityFragment extends Fragment {
             JSONObject videosJSON = new JSONObject(videosJsonStr);
             JSONArray videosArray = videosJSON.getJSONArray("results");
 
-            ArrayList<VideoItem> videosResults = new ArrayList<>();
-
             for(int i = 0; i < videosArray.length(); i++) {
-                String name = videosArray.getJSONObject(i).getString("name");
-                String key = videosArray.getJSONObject(i).getString("key");
-                String site = videosArray.getJSONObject(i).getString("site");
-                String type = videosArray.getJSONObject(i).getString("type");
+                String name = null;
+                String key = null;
+                String site = null;
+                String type = null;
+                try {
+                    name = videosArray.getJSONObject(i).getString("name");
+                    key = videosArray.getJSONObject(i).getString("key");
+                    site = videosArray.getJSONObject(i).getString("site");
+                    type = videosArray.getJSONObject(i).getString("type");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
 
                 final VideoItem item = new VideoItem(site, name, key, type);
 
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
 
-                        LinearLayout linearVideos = (LinearLayout) getActivity().findViewById(R.id.linearVideo);
-                        View videoItemView = LayoutInflater.from(context).inflate(R.layout.video_item, null);
-
-                        TextView videoNameTextView = (TextView) videoItemView.findViewById(R.id.video_name);
-                        videoNameTextView.setText(item.videoName);
-
-                        LinearLayout wholeCellVideo = (LinearLayout) videoItemView.findViewById(R.id.wholeCellVideo);
-
-                        wholeCellVideo.setOnClickListener(new View.OnClickListener() {
-
-                                                              @Override
-                                                              public void onClick(View v) {
-                                                                  try {
-                                                                      Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + item.videoKey));
-                                                                      context.startActivity(intent);
-                                                                  } catch (ActivityNotFoundException exception) {
-                                                                      Intent intent = new Intent(Intent.ACTION_VIEW,
-                                                                              Uri.parse("http://www.youtube.com/watch?v=" + item.videoKey));
-                                                                      context.startActivity(intent);
-                                                                  }
-
-                                                              }
-
-                                                          }
-                        );
-
-                        linearVideos.addView(videoItemView);
-                        //item.populateView(rootView, context);
-
-                    }
-                });
-
-
-                videosResults.add(i, new VideoItem(site, name, key, type));
+                allVideos.add(i, new VideoItem(site, name, key, type));
             }
-
-            return videosResults;
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    populateVideoList(allVideos);
+                }
+            }
+            );
+            return allVideos;
         }
 
         @Override
         protected void onPostExecute(ArrayList<VideoItem> videos) {
             super.onPostExecute(videos);
-
-            if (videos.size() != 0) {
-                rootView.findViewById(R.id.trailer_not_available).setVisibility(View.GONE);
-            } else {
-                TextView trailer_message = (TextView) rootView.findViewById(R.id.trailer_not_available);
-                trailer_message.setText(R.string.video_not_available);
-            }
         }
 
 
+    }
+
+    private void populateVideoList(ArrayList<VideoItem> videosArray) {
+        if(videosArray.size() != 0) {
+            getActivity().findViewById(R.id.trailer_not_available).setVisibility(View.GONE);
+        }
+        else {
+            TextView trailer_message = (TextView) getActivity().findViewById(R.id.trailer_not_available);
+            trailer_message.setText(R.string.video_not_available);
+        }
+        for(int i = 0; i < videosArray.size(); i++) {
+            String name = videosArray.get(i).videoName;
+            String key = videosArray.get(i).videoKey;
+            String site = videosArray.get(i).videoSite;
+            String type = videosArray.get(i).videoType;
+
+            final VideoItem item = new VideoItem(site, name, key, type);
+
+                    LinearLayout linearVideos = (LinearLayout) getActivity().findViewById(R.id.linearVideo);
+                    View videoItemView = LayoutInflater.from(getActivity()).inflate(R.layout.video_item, null);
+
+                    TextView videoNameTextView = (TextView) videoItemView.findViewById(R.id.video_name);
+                    videoNameTextView.setText(item.videoName);
+
+                    LinearLayout wholeCellVideo = (LinearLayout) videoItemView.findViewById(R.id.wholeCellVideo);
+
+                    wholeCellVideo.setOnClickListener(new View.OnClickListener() {
+                                                          @Override
+                                                          public void onClick(View v) {
+                                                              try {
+                                                                  Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + item.videoKey));
+                                                                  getActivity().startActivity(intent);
+                                                              } catch (ActivityNotFoundException exception) {
+                                                                  Intent intent = new Intent(Intent.ACTION_VIEW,
+                                                                          Uri.parse("http://www.youtube.com/watch?v=" + item.videoKey));
+                                                                  getActivity().startActivity(intent);
+                                                              }
+                                                          }
+                                                      }
+                    );
+                    linearVideos.addView(videoItemView);
+        }
     }
 
     public class FetchReviews extends AsyncTask<String, Void, ArrayList<ReviewItem>> {
@@ -381,47 +431,61 @@ public class MovieDetailActivityFragment extends Fragment {
             JSONObject reviewsJSON = new JSONObject(reviewsJsonStr);
             JSONArray reviewsArray = reviewsJSON.getJSONArray("results");
 
-            ArrayList<ReviewItem> reviewsResults = new ArrayList<>();
-
-            if(reviewsArray.length() == 0) {
-
-            }
-
             for(int i = 0; i < reviewsArray.length(); i++) {
-                String reviewer = reviewsArray.getJSONObject(i).getString("author");
-                String review = reviewsArray.getJSONObject(i).getString("content");
-
-                final ReviewItem item = new ReviewItem(reviewer, review);
-                final ReviewItem item_for_thread = item;
-
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        item.populateView(getView(), context);
-
-                    }
-                });
-
-                reviewsResults.add(i, new ReviewItem(reviewer, review));
+                String reviewer = null;
+                String review = null;
+                try {
+                    reviewer = reviewsArray.getJSONObject(i).getString("author");
+                    review = reviewsArray.getJSONObject(i).getString("content");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                allReviews.add(i, new ReviewItem(reviewer, review));
             }
 
-            return reviewsResults;
+            getActivity().runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                populateReviewList(allReviews);
+                                            }
+                                        }
+            );
+            return allReviews;
         }
 
         @Override
         protected void onPostExecute(ArrayList<ReviewItem> reviews) {
             super.onPostExecute(reviews);
 
-            if (reviews.size() != 0) {
-                rootView.findViewById(R.id.no_review).setVisibility(View.GONE);
-            } else {
-                TextView review_message = (TextView) rootView.findViewById(R.id.no_review);
-                review_message.setText(R.string.no_review);
+            if (savedScrollPosition != 0) {
+                final ScrollView detailView = (ScrollView) getActivity().findViewById(R.id.detailScrollview);
+                scrollOnView(detailView, savedScrollPosition);
             }
         }
+    }
 
+    private void populateReviewList(ArrayList<ReviewItem> reviewsList) {
 
+        if (reviewsList.size() != 0) {
+            getActivity().findViewById(R.id.no_review).setVisibility(View.GONE);
+        } else {
+            TextView review_message = (TextView) getActivity().findViewById(R.id.no_review);
+            review_message.setText(R.string.no_review);
+        }
+
+        for(int i = 0; i < reviewsList.size(); i++) {
+            String reviewer = reviewsList.get(i).reviewer;
+            String review = reviewsList.get(i).review;
+
+            final ReviewItem item = new ReviewItem(reviewer, review);
+
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    item.populateView(getView(), getActivity());
+                }
+            });
+        }
     }
 
     private void fillMovieFields(MoviePosterItem movie, View rootView) {

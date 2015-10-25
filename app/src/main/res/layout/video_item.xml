@@ -4,7 +4,8 @@
     android:layout_height="wrap_content"
     android:id="@+id/wholeCellVideo"
     android:weightSum="1"
-    android:background="@drawable/highlight_video_items">
+    android:background="@drawable/highlight_video_items"
+    android:paddingTop="10dp">
 
     <ImageView
         android:layout_width="35dp"
@@ -21,7 +22,8 @@
         android:textAlignment="center"
         android:textSize="15sp"
         android:singleLine="false"
-        android:paddingTop="10dp"
-        android:paddingLeft="10dp" />
+        android:paddingLeft="10dp"
+        android:autoText="false"
+        android:gravity="center_vertical" />
 
 </LinearLayout>
