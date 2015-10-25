@@ -1,5 +1,6 @@
 package be.julot.popularmovies;
 
+import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -166,6 +167,8 @@ public class MovieDetailActivityFragment extends Fragment {
 
         private Context context;
         private View rootView;
+        private ProgressDialog dialog = new ProgressDialog(getActivity());
+
 
         public FetchVideos(Context context, View rootView) {
             this.context = context;
@@ -177,6 +180,8 @@ public class MovieDetailActivityFragment extends Fragment {
         /** application context. */
         @Override
         protected void onPreExecute() {
+            this.dialog.setMessage(getResources().getString(R.string.loading_videos_message));
+            this.dialog.show();
         }
 
         @Override
@@ -290,6 +295,9 @@ public class MovieDetailActivityFragment extends Fragment {
         @Override
         protected void onPostExecute(ArrayList<VideoItem> videos) {
             super.onPostExecute(videos);
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
         }
 
 
@@ -341,6 +349,7 @@ public class MovieDetailActivityFragment extends Fragment {
 
         private Context context;
         private View rootView;
+        private ProgressDialog dialog = new ProgressDialog(getActivity());
 
         public FetchReviews(Context context, View rootView) {
             this.context = context;
@@ -350,6 +359,8 @@ public class MovieDetailActivityFragment extends Fragment {
 
         @Override
         protected void onPreExecute() {
+            this.dialog.setMessage(getResources().getString(R.string.loading_reviews_message));
+            this.dialog.show();
         }
 
         @Override
@@ -456,7 +467,9 @@ public class MovieDetailActivityFragment extends Fragment {
         @Override
         protected void onPostExecute(ArrayList<ReviewItem> reviews) {
             super.onPostExecute(reviews);
-
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
             if (savedScrollPosition != 0) {
                 final ScrollView detailView = (ScrollView) getActivity().findViewById(R.id.detailScrollview);
                 scrollOnView(detailView, savedScrollPosition);

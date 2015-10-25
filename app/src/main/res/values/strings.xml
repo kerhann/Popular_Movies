@@ -32,4 +32,6 @@
     <string name="movie_poster_image_content_description">Movie poster</string>
     <string name="reviews">Reviews</string>
     <string name="select_movie">Please select a movie</string>
+    <string name="loading_videos_message">Loading videos...</string>
+    <string name="loading_reviews_message">Loading reviews...</string>
 </resources>
