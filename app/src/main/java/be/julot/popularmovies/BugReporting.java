@@ -21,16 +21,6 @@ public class BugReporting extends ActionBarActivity {
     Date date;
     Context context;
 
-    public BugReporting(String title, String message, String email, Date date, Context context) {
-
-        this.messageTitle = title;
-        this.IOMessage = message;
-        this.email = email;
-        this.date = date;
-        this.context = context;
-
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,8 +49,7 @@ public class BugReporting extends ActionBarActivity {
 
             @Override
             public void onClick(View view) {
-                BugReporting bugReport = new BugReporting("Bug report", IOMessage, "jferet@gmail.com", now, BugReporting.this);
-                bugReport.Send();
+              Send("Bug report", IOMessage, "jferet@gmail.com", now, BugReporting.this);
             }
 
         });
@@ -68,17 +57,17 @@ public class BugReporting extends ActionBarActivity {
 
     }
 
-    public void Send() {
+    public void Send(String s1, String IOMessage, String email, Date now, BugReporting bugReporting) {
         Intent emailIntent = new Intent(Intent.ACTION_SEND);
         emailIntent.setType("message/rfc822")
-                .putExtra(Intent.EXTRA_EMAIL, new String[] { this.email })
-                .putExtra(Intent.EXTRA_SUBJECT, this.messageTitle)
-                .putExtra(Intent.EXTRA_TEXT, this.date.toString() + "\n\n" + this.IOMessage);
+                .putExtra(Intent.EXTRA_EMAIL, new String[] { email })
+                .putExtra(Intent.EXTRA_SUBJECT, s1)
+                .putExtra(Intent.EXTRA_TEXT, now.toString() + "\n\n" + IOMessage);
 
         try {
-            this.context.startActivity(Intent.createChooser(emailIntent, "Send mail..."));
+            bugReporting.startActivity(Intent.createChooser(emailIntent, "Send mail..."));
         } catch (android.content.ActivityNotFoundException exception) {
-            Toast.makeText(this.context, "No email client seems to be installed", Toast.LENGTH_LONG).show();
+            Toast.makeText(bugReporting, "No email client seems to be installed", Toast.LENGTH_LONG).show();
         }
 
     }
