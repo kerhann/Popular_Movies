@@ -42,7 +42,7 @@ public class MovieDetailActivityFragment extends Fragment {
     public static final String MOVIE_TAG = "movie_tag";
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
     public static MoviePosterItem movie;
-    public final String API_KEY = "d02afd0919d8034eee26567d22343d36";
+    public final String API_KEY = "API KEY HERE";
     private boolean twoPane;
     private ArrayList<VideoItem> allVideos = new ArrayList<>();
     private ArrayList<ReviewItem> allReviews = new ArrayList<>();

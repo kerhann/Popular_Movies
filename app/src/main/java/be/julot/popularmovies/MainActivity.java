@@ -42,7 +42,7 @@ import de.greenrobot.event.EventBus;
 
 public class MainActivity extends AppCompatActivity {
 
-    public final String API_KEY = "d02afd0919d8034eee26567d22343d36";
+    public final String API_KEY = "API KEY HERE";
     public MoviePosterItemAdapter moviePosterAdapter;
     public String sortby_pref;
     //I chose to define a boolean to know if update of the grid is necessary. In doubt, it is "yes".
