@@ -1,6 +1,5 @@
 package be.julot.popularmovies;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -15,11 +14,7 @@ import java.util.Date;
 
 public class BugReporting extends ActionBarActivity {
 
-    String messageTitle;
     String IOMessage;
-    String email;
-    Date date;
-    Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
