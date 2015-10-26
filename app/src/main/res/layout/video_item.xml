@@ -1,39 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    android:layout_height="wrap_content"
-    android:layout_width="match_parent"
-    android:orientation="vertical"
-    xmlns:android="http://schemas.android.com/apk/res/android">
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:orientation="vertical">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/wholeCellVideo"
-    android:weightSum="1"
-    android:background="@drawable/highlight_video_items">
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/highlight_video_items"
+    android:orientation="horizontal"
+    android:weightSum="1">
 
     <ImageView
+        android:id="@+id/imageView"
         android:layout_width="35dp"
         android:layout_height="35dp"
-        android:id="@+id/imageView"
-        android:src="@drawable/abc_ic_go_search_api_mtrl_alpha"
-        android:background="#0e678a" />
+        android:background="#0e678a"
+        android:src="@drawable/abc_ic_go_search_api_mtrl_alpha" />
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="35dp"
-        android:text="@string/no_trailer_title"
         android:id="@+id/video_name"
-        android:textAlignment="center"
-        android:textSize="15sp"
-        android:singleLine="false"
+        android:layout_width="0dp"
+        android:layout_height="35dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
         android:paddingLeft="10dp"
-        android:gravity="center_vertical" />
+        android:singleLine="false"
+        android:text="@string/no_trailer_title"
+        android:textAlignment="center"
+        android:textSize="15sp" />
 
 </LinearLayout>
 <View
     android:layout_width="match_parent"
     android:layout_height="1dp"
-    android:background="@android:color/darker_gray"
     android:layout_marginBottom="5dp"
-    android:layout_marginTop="5dp"/>
+    android:layout_marginTop="5dp"
+    android:background="@android:color/darker_gray" />
+
 </LinearLayout>
