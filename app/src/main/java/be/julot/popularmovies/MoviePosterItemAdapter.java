@@ -17,10 +17,12 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
+//My adapter for poster grid
+
 public class MoviePosterItemAdapter extends ArrayAdapter<MoviePosterItem> {
 
-    private boolean twoPane;
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
+    private boolean twoPane;
 
     public MoviePosterItemAdapter(Activity context, List<MoviePosterItem> moviePosterItems, boolean twoPane) {
         super(context, 0, moviePosterItems);

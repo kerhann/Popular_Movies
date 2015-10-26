@@ -6,22 +6,30 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.activeandroid.query.Delete;
+import com.activeandroid.query.Select;
 
 import de.greenrobot.event.EventBus;
 
 
 // Once the Favorite button is clicked (either to add or remove a favorite)...
 
-public class FavoriteUpdate {
+public class FavoriteManagement {
 
     public final boolean update;
 
-    public FavoriteUpdate(boolean update) {
+    public FavoriteManagement(boolean update) {
         this.update = update;
     }
 
+    public static DB_Favorite_Movies getFavorite(long id) {
+        return new Select()
+                .from(DB_Favorite_Movies.class)
+                .where("tmdb_ID = ?", id)
+                .executeSingle();
+    }
+
     //...we update the favorites in local db...
-    public void Proceed(MoviePosterItem movie, View view, Context context) {
+    public void ProceedUpdate(MoviePosterItem movie, View view, Context context) {
 
         //=> either we remove it...
         if(movie.favorite) {
@@ -51,6 +59,7 @@ public class FavoriteUpdate {
         //In any case, we tell the poster grid (useful mostly if in dual pane view), so that
         // the grid updates if the favorite list has changed (and if the grid is supposed to show
         //favorites). Thanks EventBus for making it so simple...
-        EventBus.getDefault().post(new FavoriteUpdate(true));
+        EventBus.getDefault().post(new FavoriteManagement(true));
     }
+
 }

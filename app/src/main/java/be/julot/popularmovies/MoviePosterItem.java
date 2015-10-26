@@ -1,6 +1,6 @@
 package be.julot.popularmovies;
 
-//Defines each item in the movie poster grid. Each item shows a title, the average of votes and the
+//Defines each item in the movie poster grid. Each item shows a title and the
 //movie poster in background. See movies_grid_item.xml
 
 import android.os.Parcel;
@@ -10,6 +10,17 @@ import java.util.ArrayList;
 
 public class MoviePosterItem extends ArrayList<Parcelable> implements Parcelable {
 
+    public static final Creator<MoviePosterItem> CREATOR = new Creator<MoviePosterItem>() {
+        @Override
+        public MoviePosterItem createFromParcel(Parcel in) {
+            return new MoviePosterItem(in);
+        }
+
+        @Override
+        public MoviePosterItem[] newArray(int size) {
+            return new MoviePosterItem[size];
+        }
+    };
     public long tmdb_ID;
     public String movieTitle;
     public String movieOverview;
@@ -18,6 +29,7 @@ public class MoviePosterItem extends ArrayList<Parcelable> implements Parcelable
     public int movieVoteCount;
     public String moviePoster;
     boolean favorite;
+
 
     public MoviePosterItem(String mTitle, String mPoster, int mYear,
                            String mOverview, int mVoteCount, float mRating, boolean mFavorite,
@@ -32,7 +44,6 @@ public class MoviePosterItem extends ArrayList<Parcelable> implements Parcelable
         this.tmdb_ID = mTmdbId;
     }
 
-
     protected MoviePosterItem(Parcel in) {
         movieTitle = in.readString();
         moviePoster = in.readString();
@@ -43,18 +54,6 @@ public class MoviePosterItem extends ArrayList<Parcelable> implements Parcelable
         favorite = in.readInt() != 0;
         tmdb_ID = in.readLong();
     }
-
-    public static final Creator<MoviePosterItem> CREATOR = new Creator<MoviePosterItem>() {
-        @Override
-        public MoviePosterItem createFromParcel(Parcel in) {
-            return new MoviePosterItem(in);
-        }
-
-        @Override
-        public MoviePosterItem[] newArray(int size) {
-            return new MoviePosterItem[size];
-        }
-    };
 
     @Override
     public int describeContents() {

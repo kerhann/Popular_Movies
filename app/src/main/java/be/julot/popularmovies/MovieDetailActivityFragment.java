@@ -18,7 +18,6 @@ import android.widget.RatingBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.activeandroid.query.Select;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -40,17 +39,26 @@ import butterknife.OnClick;
  * A placeholder fragment containing a simple view.
  */
 public class MovieDetailActivityFragment extends Fragment {
-    private static final String DETAILFRAGMENT_TAG = "DFTAG";
-    public final String API_KEY = "d02afd0919d8034eee26567d22343d36";
     public static final String MOVIE_TAG = "movie_tag";
+    private static final String DETAILFRAGMENT_TAG = "DFTAG";
+    public static MoviePosterItem movie;
+    public final String API_KEY = "d02afd0919d8034eee26567d22343d36";
     private boolean twoPane;
-
     private ArrayList<VideoItem> allVideos = new ArrayList<>();
     private ArrayList<ReviewItem> allReviews = new ArrayList<>();
-    public static MoviePosterItem movie;
     private int savedScrollPosition = 0;
 
     public MovieDetailActivityFragment() {
+    }
+
+    public static void updateFavoriteButton(boolean favorite, View rootView) {
+        Button favButton = (Button) rootView.findViewById(R.id.button_Favorite);
+        movie.favorite = favorite;
+        if (favorite) {
+            favButton.setText(R.string.remove_favorite);
+        } else {
+            favButton.setText(R.string.add_favorite);
+        }
     }
 
     @Override
@@ -85,7 +93,7 @@ public class MovieDetailActivityFragment extends Fragment {
         //Since we have a movie at this stage, let's populate our detail view
         fillMovieFields(movie, rootView);
         //and check if the movie is in favorites + update the favorite button accordingly.
-        DB_Favorite_Movies favorite = getFavorite(movie.tmdb_ID);
+        DB_Favorite_Movies favorite = FavoriteManagement.getFavorite(movie.tmdb_ID);
         updateFavoriteButton(favorite != null, rootView);
 
         return rootView;
@@ -164,7 +172,6 @@ public class MovieDetailActivityFragment extends Fragment {
 
     }
 
-
     //Smooth scroll method when restoring saved instance
     private void scrollOnView(final ScrollView scrollView, final int scrollPosition){
         scrollView.post(new Runnable() {
@@ -177,8 +184,8 @@ public class MovieDetailActivityFragment extends Fragment {
     //If the favorite button is clicked, update the favorite list (methods in new class)
     @OnClick(R.id.button_Favorite)
     public void updateFavorites(){
-        FavoriteUpdate update = new FavoriteUpdate(true);
-        update.Proceed(movie, getView(), getActivity());
+        FavoriteManagement update = new FavoriteManagement(true);
+        update.ProceedUpdate(movie, getView(), getActivity());
     }
 
     //If there is no Internet connection, make the "Try again" button refresh the activity/fragment
@@ -197,14 +204,80 @@ public class MovieDetailActivityFragment extends Fragment {
             getActivity().getSupportFragmentManager().beginTransaction()
                     .replace(R.id.movie_detail_container, fragment, DETAILFRAGMENT_TAG)
                     .commit();
-        }
-        else {
+        } else {
             Intent detailIntent = new Intent(getActivity(), MovieDetailActivity.class)
                     .putParcelableArrayListExtra(Intent.EXTRA_TEXT, movie)
                     .putExtra("twoPane", false);
             getActivity().startActivity(detailIntent);
         }
 
+    }
+
+    private void populateVideoList(ArrayList<VideoItem> videosArray) {
+        //If we have results, hide the "no video" message
+        if(videosArray.size() != 0) {
+            getActivity().findViewById(R.id.trailer_not_available).setVisibility(View.GONE);
+        }
+
+        for(int i = 0; i < videosArray.size(); i++) {
+            String name = videosArray.get(i).videoName;
+            String key = videosArray.get(i).videoKey;
+            String site = videosArray.get(i).videoSite;
+            String type = videosArray.get(i).videoType;
+
+            final VideoItem item = new VideoItem(site, name, key, type);
+                    item.populateView(getView(), getActivity());
+        }
+    }
+
+    private void populateReviewList(ArrayList<ReviewItem> reviewsList) {
+
+        if (reviewsList.size() != 0) {
+            getActivity().findViewById(R.id.no_review).setVisibility(View.GONE);
+        }
+
+        for (int i = 0; i < reviewsList.size(); i++) {
+            String reviewer = reviewsList.get(i).reviewer;
+            String review = reviewsList.get(i).review;
+
+            final ReviewItem item = new ReviewItem(reviewer, review);
+            item.populateView(getView(), getActivity());
+        }
+    }
+
+    private void fillMovieFields(MoviePosterItem movie, View rootView) {
+
+        TextView titleTextView = (TextView) rootView.findViewById(R.id.titleTextView);
+        TextView yearTextView = (TextView) rootView.findViewById(R.id.yearTextView);
+        TextView voteCountTextView = (TextView) rootView.findViewById(R.id.voteCountTextView);
+        TextView overviewTextView = (TextView) rootView.findViewById(R.id.overviewDetailTextView);
+        ImageView posterImageView = (ImageView) rootView.findViewById(R.id.posterImageDetail);
+        RatingBar ratingBar = (RatingBar) rootView.findViewById(R.id.ratingBar);
+
+        Picasso.with(getActivity()).load(movie.moviePoster).into(posterImageView);
+        titleTextView.setText(movie.movieTitle);
+        if (movie.movieYear != 0) {
+            yearTextView.setText(String
+                    .format(getResources().getString(R.string.movieYearDetail),
+                            movie.movieYear));
+        }
+        voteCountTextView.setText(String
+                .format(getResources().getString(R.string.vote_count_if_any),
+                        movie.movieVoteCount));
+        if (movie.movieOverview != null) {
+            overviewTextView.setText(movie.movieOverview);  //allows to display value in
+            // strings.xml (not displaying "null")
+            // if no overview is available
+        }
+        ratingBar.setRating(movie.movieRating / 2); //converting a 10-based value to 5-star rating
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager)
+                getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo active = connectivityManager.getActiveNetworkInfo();
+        return active != null && active.isConnected();
     }
 
     // API call for retrieving videos (I won't comment it since it is very similar to FetchPosterTask
@@ -292,14 +365,14 @@ public class MovieDetailActivityFragment extends Fragment {
                 e.printStackTrace();
             }
 
-        return finalVideosDataForList;
+            return finalVideosDataForList;
         }
 
         private ArrayList<VideoItem> getVideosDataFromJson(String videosJsonStr) throws JSONException {
             JSONObject videosJSON = new JSONObject(videosJsonStr);
             JSONArray videosArray = videosJSON.getJSONArray("results");
 
-            for(int i = 0; i < videosArray.length(); i++) {
+            for (int i = 0; i < videosArray.length(); i++) {
                 String name = null;
                 String key = null;
                 String site = null;
@@ -318,11 +391,11 @@ public class MovieDetailActivityFragment extends Fragment {
 
             //Any update on the UI must be done in the main UI thread, not in async
             getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    populateVideoList(allVideos);
-                }
-            }
+                                            @Override
+                                            public void run() {
+                                                populateVideoList(allVideos);
+                                            }
+                                        }
             );
             return allVideos;
         }
@@ -338,36 +411,13 @@ public class MovieDetailActivityFragment extends Fragment {
 
     }
 
-    private void populateVideoList(ArrayList<VideoItem> videosArray) {
-        //If we have results, hide the "no video" message
-        if(videosArray.size() != 0) {
-            getActivity().findViewById(R.id.trailer_not_available).setVisibility(View.GONE);
-        }
-
-        for(int i = 0; i < videosArray.size(); i++) {
-            String name = videosArray.get(i).videoName;
-            String key = videosArray.get(i).videoKey;
-            String site = videosArray.get(i).videoSite;
-            String type = videosArray.get(i).videoType;
-
-            final VideoItem item = new VideoItem(site, name, key, type);
-
-            //Any update on the UI must be done in the main UI thread, not in async
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    item.populateView(getView(), getActivity());
-                }
-            });
-        }
-    }
-
     //Not commenting this method (similar to above and to FetchPosterTask in MainActivity)
     public class FetchReviews extends AsyncTask<String, Void, ArrayList<ReviewItem>> {
 
         private ProgressDialog reviewdialog = new ProgressDialog(getActivity());
 
-        public FetchReviews() {}
+        public FetchReviews() {
+        }
 
 
         @Override
@@ -452,7 +502,7 @@ public class MovieDetailActivityFragment extends Fragment {
             JSONObject reviewsJSON = new JSONObject(reviewsJsonStr);
             JSONArray reviewsArray = reviewsJSON.getJSONArray("results");
 
-            for(int i = 0; i < reviewsArray.length(); i++) {
+            for (int i = 0; i < reviewsArray.length(); i++) {
                 String reviewer = null;
                 String review = null;
                 try {
@@ -488,80 +538,5 @@ public class MovieDetailActivityFragment extends Fragment {
                 scrollOnView(detailView, savedScrollPosition);
             }
         }
-    }
-
-    private void populateReviewList(ArrayList<ReviewItem> reviewsList) {
-
-        if (reviewsList.size() != 0) {
-            getActivity().findViewById(R.id.no_review).setVisibility(View.GONE);
-        }
-
-        for(int i = 0; i < reviewsList.size(); i++) {
-            String reviewer = reviewsList.get(i).reviewer;
-            String review = reviewsList.get(i).review;
-
-            final ReviewItem item = new ReviewItem(reviewer, review);
-
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    item.populateView(getView(), getActivity());
-                }
-            });
-        }
-    }
-
-    private void fillMovieFields(MoviePosterItem movie, View rootView) {
-
-        TextView titleTextView = (TextView) rootView.findViewById(R.id.titleTextView);
-        TextView yearTextView = (TextView) rootView.findViewById(R.id.yearTextView);
-        TextView voteCountTextView = (TextView) rootView.findViewById(R.id.voteCountTextView);
-        TextView overviewTextView = (TextView) rootView.findViewById(R.id.overviewDetailTextView);
-        ImageView posterImageView = (ImageView) rootView.findViewById(R.id.posterImageDetail);
-        RatingBar ratingBar = (RatingBar) rootView.findViewById(R.id.ratingBar);
-
-        Picasso.with(getActivity()).load(movie.moviePoster).into(posterImageView);
-        titleTextView.setText(movie.movieTitle);
-        if(movie.movieYear != 0) {
-            yearTextView.setText(String
-                    .format(getResources().getString(R.string.movieYearDetail),
-                            movie.movieYear));
-        }
-        voteCountTextView.setText(String
-                .format(getResources().getString(R.string.vote_count_if_any),
-                        movie.movieVoteCount));
-        if(movie.movieOverview != null) {
-            overviewTextView.setText(movie.movieOverview);  //allows to display value in
-                                                            // strings.xml (not displaying "null")
-                                                            // if no overview is available
-        }
-        ratingBar.setRating(movie.movieRating / 2); //converting a 10-based value to 5-star rating
-    }
-
-    public static void updateFavoriteButton(boolean favorite, View rootView) {
-        Button favButton = (Button) rootView.findViewById(R.id.button_Favorite);
-        movie.favorite = favorite;
-        if(favorite)
-        {
-            favButton.setText(R.string.remove_favorite);
-        }
-        else {
-            favButton.setText(R.string.add_favorite);
-        }
-    }
-
-    public static DB_Favorite_Movies getFavorite(long id) {
-        return new Select()
-                .from(DB_Favorite_Movies.class)
-                .where("tmdb_ID = ?", id)
-                .executeSingle();
-    }
-
-    private boolean isNetworkAvailable() {
-        ConnectivityManager connectivityManager = (ConnectivityManager)
-                getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        NetworkInfo active = connectivityManager.getActiveNetworkInfo();
-        return active != null && active.isConnected();
     }
 }

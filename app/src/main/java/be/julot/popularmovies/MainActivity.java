@@ -45,11 +45,11 @@ public class MainActivity extends AppCompatActivity {
     public final String API_KEY = "d02afd0919d8034eee26567d22343d36";
     public MoviePosterItemAdapter moviePosterAdapter;
     public String sortby_pref;
+    //I chose to define a boolean to know if update of the grid is necessary. In doubt, it is "yes".
+    public Boolean updateNecessary = true;
     private ArrayList<MoviePosterItem> moviePosterItems = new ArrayList<>();
     private boolean no_movie_selected = false;
     private boolean mTwoPane;
-    //I chose to define a boolean to know if update of the grid is necessary. In doubt, it is "yes".
-    public Boolean updateNecessary = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
     //... and if a movie was added or removed from the favorite collection, we update the grid
     // in a dual pane display where the grid is supposed to show favorites.
     @TargetApi(Build.VERSION_CODES.KITKAT)
-    public void onEvent(FavoriteUpdate event){
+    public void onEvent(FavoriteManagement event) {
         if(mTwoPane && Objects.equals(sortby_pref, "favorites")){
             updateNecessary = event.update;
             updatePosterGrid(sortby_pref);
@@ -173,6 +173,23 @@ public class MainActivity extends AppCompatActivity {
         update.execute(sortby);
     }
 
+        @Override
+        public boolean onCreateOptionsMenu(Menu menu) {
+            getMenuInflater().inflate(R.menu.menu_poster_grid_fragment, menu);
+            return true;
+        }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_settings) {
+            Intent settingsIntent = new Intent(this, SettingsActivity.class);
+            startActivity(settingsIntent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     public class FetchPostersTask extends AsyncTask<String, Void, ArrayList<MoviePosterItem>> {
 
         private String IOMessage;
@@ -193,10 +210,9 @@ public class MainActivity extends AppCompatActivity {
 
 
             //If we need to retrieve favorites, get them locally
-            if(Objects.equals(params[0], "favorites")){
+            if (Objects.equals(params[0], "favorites")) {
                 finalMoviesDataForGrid = getFavorites();
-            }
-            else {
+            } else {
 
                 HttpURLConnection urlConnection = null;
                 BufferedReader reader = null;
@@ -276,10 +292,9 @@ public class MainActivity extends AppCompatActivity {
 
             ArrayList<MoviePosterItem> favorites = new ArrayList<>();
 
-            if(favList.size() == 0) {
+            if (favList.size() == 0) {
                 favorites = null;
-            }
-            else {
+            } else {
                 for (int i = 0; i < favList.size(); i++) {
 
                     favorites.add(i, new MoviePosterItem(
@@ -307,9 +322,9 @@ public class MainActivity extends AppCompatActivity {
 
             ArrayList<MoviePosterItem> moviesResults = new ArrayList<>();
 
-            for(int i = 0; i < resultsArray.length(); i++) {
+            for (int i = 0; i < resultsArray.length(); i++) {
                 String title = resultsArray.getJSONObject(i).getString("original_title");
-                String posterRelativeUrl = "http://image.tmdb.org/t/p/w185"+resultsArray.getJSONObject(i).getString("poster_path");
+                String posterRelativeUrl = "http://image.tmdb.org/t/p/w185" + resultsArray.getJSONObject(i).getString("poster_path");
 
                 //Just to play a bit with dates and calendar, I am trying to retrieve the year only,
                 //but avoiding to use a "substring" method.
@@ -353,12 +368,11 @@ public class MainActivity extends AppCompatActivity {
                 moviePosterAdapter.clear();
                 moviePosterAdapter.addAll(moviePosters);
                 moviePosterItems = moviePosters;
-            }
-            else {
+            } else {
                 //If no results...
                 moviePosterAdapter.clear();
                 //... and if favorites are wanted, then show the "no favorite" message
-                if(Objects.equals(sortby_pref, "favorites")) {
+                if (Objects.equals(sortby_pref, "favorites")) {
                     MainActivity.this.findViewById(R.id.no_favorites).setVisibility(View.VISIBLE);
                 } else {
                     //In this scenario, we haven't been able to grab anything from TMDB, this is
@@ -371,24 +385,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-    }
-
-
-        @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_poster_grid_fragment, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if(id == R.id.action_settings) {
-            Intent settingsIntent = new Intent(this, SettingsActivity.class);
-            startActivity(settingsIntent);
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
 }
