@@ -124,9 +124,16 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/loading"
-            android:id="@+id/trailer_not_available"
-            android:layout_below="@+id/trailerTextView"/>
+            android:text="@string/video_not_available"
+            android:id="@+id/trailer_not_available" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="@string/try_again"
+                android:id="@+id/no_video_button"
+                android:visibility="gone"/>
 
         </LinearLayout>
 
@@ -145,15 +152,22 @@
                 android:layout_height="wrap_content"
                 android:text="@string/reviews"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textStyle="bold|italic" />
+                android:textStyle="bold|italic"
+                android:layout_marginBottom="15dp"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="@string/no_review"
+                android:id="@+id/no_review" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="@string/loading"
-                android:id="@+id/no_review"
-                android:layout_marginTop="10dp" />
+                android:text="@string/try_again"
+                android:id="@+id/no_review_button"
+                android:visibility="gone"/>
 
         </LinearLayout>
 

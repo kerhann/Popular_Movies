@@ -5,9 +5,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -67,6 +65,7 @@ public class MoviePosterItemAdapter extends ArrayAdapter<MoviePosterItem> {
                                         {
                                             Bundle args = new Bundle();
                                             args.putParcelable(MovieDetailActivityFragment.MOVIE_TAG, moviePosterItem);
+                                            args.putBoolean("twoPane", true);
 
                                             MovieDetailActivityFragment fragment = new MovieDetailActivityFragment();
                                             fragment.setArguments(args);
@@ -78,7 +77,8 @@ public class MoviePosterItemAdapter extends ArrayAdapter<MoviePosterItem> {
                                         }
                                         else {
                                             Intent detailIntent = new Intent(getContext(), MovieDetailActivity.class)
-                                                  .putParcelableArrayListExtra(Intent.EXTRA_TEXT, moviePosterItem);
+                                                  .putParcelableArrayListExtra(Intent.EXTRA_TEXT, moviePosterItem)
+                                                    .putExtra("twoPane", false);
                                             getContext().startActivity(detailIntent);
                                         }
 

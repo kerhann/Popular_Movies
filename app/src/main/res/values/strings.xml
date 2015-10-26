@@ -7,9 +7,10 @@
     <string name="title_activity_movie_detail">Movie details</string>
     <string name="titleTextView">-</string>
     <string name="vote_count">-</string>
+    <string name="vote_count_if_any">(%1$d)</string>
     <string name="overviewTitle">Overview</string>
     <string name="overviewDetail">No overview available</string>
-    <string name="movieYearDetail">-</string>
+    <string name="movieYearDetail">%1$d</string>
     <string name="defaultVoteAverage">-</string>
     <string name="starImageContentDesc">A star to illustrate average votes</string>
     <string name="posterImageInGridContentDesc">The poster image in gridview</string>
@@ -28,10 +29,12 @@
     <string name="video_not_available">No video available</string>
     <string name="loading">Loading…</string>
     <string name="more_reviews">More reviews…</string>
-    <string name="no_review">There is no review for this movie</string>
+    <string name="no_review">No review available</string>
     <string name="movie_poster_image_content_description">Movie poster</string>
     <string name="reviews">Reviews</string>
     <string name="select_movie">Please select a movie</string>
-    <string name="loading_videos_message">Loading videos...</string>
-    <string name="loading_reviews_message">Loading reviews...</string>
+    <string name="loading_videos_message">Loading videos…</string>
+    <string name="loading_reviews_message">Loading reviews…</string>
+    <string name="connection_problem">Oops… Could not connect. Please check your Internet connection and try again.</string>
+    <string name="movie_poster_image_content_desc">Movie poster image</string>
 </resources>

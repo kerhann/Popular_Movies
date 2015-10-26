@@ -4,30 +4,22 @@ import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Point;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Parcelable;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.Loader;
-import android.util.Log;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.RatingBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.activeandroid.query.Delete;
 import com.activeandroid.query.Select;
 import com.squareup.picasso.Picasso;
 
@@ -50,9 +42,10 @@ import butterknife.OnClick;
  * A placeholder fragment containing a simple view.
  */
 public class MovieDetailActivityFragment extends Fragment {
-    public Parcelable MOVIE = null;
+    private static final String DETAILFRAGMENT_TAG = "DFTAG";
     public final String API_KEY = "d02afd0919d8034eee26567d22343d36";
     public static final String MOVIE_TAG = "movie_tag";
+    private boolean twoPane;
 
     private ArrayList<VideoItem> allVideos = new ArrayList<>();
     private ArrayList<ReviewItem> allReviews = new ArrayList<>();
@@ -72,11 +65,13 @@ public class MovieDetailActivityFragment extends Fragment {
 
         Intent intent = getActivity().getIntent();
         movie = (MoviePosterItem) intent.getParcelableArrayListExtra(Intent.EXTRA_TEXT);
+        twoPane = intent.getBooleanExtra("twoPane", false);
 
         if (movie == null) {
             Bundle bundle = getArguments();
             if(bundle != null) {
                 movie = bundle.getParcelable(MOVIE_TAG);
+                twoPane = bundle.getBoolean("twoPane", false);
             }
             else {
                 return rootView;
@@ -110,27 +105,41 @@ public class MovieDetailActivityFragment extends Fragment {
 
         //Finally, get the videos & trailers
         if(savedInstanceState == null || !savedInstanceState.containsKey("allVideos")) {
-            FetchVideos getVideos = new FetchVideos(getActivity(), getView());
-            getVideos.execute(String.valueOf(movie.tmdb_ID), "en");
+            if(isNetworkAvailable()){
+                FetchVideos getVideos = new FetchVideos();
+                getVideos.execute(String.valueOf(movie.tmdb_ID), "en");
+            } else {
+                TextView trailer_message = (TextView) getActivity().findViewById(R.id.trailer_not_available);
+                Button no_video_button = (Button) getActivity().findViewById(R.id.no_video_button);
+                trailer_message.setText(R.string.connection_problem);
+                no_video_button.setVisibility(View.VISIBLE);
+            }
         }
         else {
-            allVideos = savedInstanceState.<VideoItem>getParcelableArrayList("allVideos");
+            allVideos = savedInstanceState.getParcelableArrayList("allVideos");
             populateVideoList(allVideos);
         }
 
         if(savedInstanceState == null || !savedInstanceState.containsKey("allReviews")) {
-            FetchReviews getReviews = new FetchReviews(getActivity(), getView());
-            getReviews.execute(String.valueOf(movie.tmdb_ID), "en");
+            if(isNetworkAvailable()){
+                FetchReviews getReviews = new FetchReviews();
+                getReviews.execute(String.valueOf(movie.tmdb_ID), "en");
+            } else {
+                TextView review_message = (TextView) getActivity().findViewById(R.id.no_review);
+                Button no_review_button = (Button) getActivity().findViewById(R.id.no_review_button);
+                review_message.setText(R.string.connection_problem);
+                no_review_button.setVisibility(View.VISIBLE);
+            }
         }
         else {
-            allReviews = savedInstanceState.<ReviewItem>getParcelableArrayList("allReviews");
+            allReviews = savedInstanceState.getParcelableArrayList("allReviews");
             populateReviewList(allReviews);
             scrollOnView((ScrollView) getActivity().findViewById(R.id.detailScrollview), savedScrollPosition);
         }
 
     }
 
-    private final void scrollOnView(final ScrollView scrollView, final int scrollPosition){
+    private void scrollOnView(final ScrollView scrollView, final int scrollPosition){
         scrollView.post(new Runnable() {
             public void run() {
                 scrollView.smoothScrollTo(0, scrollPosition);
@@ -140,41 +149,39 @@ public class MovieDetailActivityFragment extends Fragment {
 
     @OnClick(R.id.button_Favorite)
     public void updateFavorites(){
-        if(movie.favorite) {
-            new Delete().from(DB_Favorite_Movies.class).where("tmdb_ID = ?", movie.tmdb_ID).execute();
-            movie.favorite = false;
-            updateFavoriteButton(false, getView());
-            Toast.makeText(getActivity(), R.string.remove_favorite_msg, Toast.LENGTH_LONG).show();
+        FavoriteUpdate update = new FavoriteUpdate(true);
+        update.Proceed(movie, getView(), getActivity());
+    }
+
+    @OnClick({R.id.no_review_button, R.id.no_video_button})
+    public void refreshDetailActivity() {
+
+        if(twoPane)
+        {
+            Bundle args = new Bundle();
+            args.putParcelable(MovieDetailActivityFragment.MOVIE_TAG, movie);
+            args.putBoolean("twoPane", true);
+
+            MovieDetailActivityFragment fragment = new MovieDetailActivityFragment();
+            fragment.setArguments(args);
+
+            getActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.movie_detail_container, fragment, DETAILFRAGMENT_TAG)
+                    .commit();
         }
         else {
-            DB_Favorite_Movies favorite = new DB_Favorite_Movies();
-            favorite.tmdb_ID = movie.tmdb_ID;
-            favorite.movieTitle = movie.movieTitle;
-            favorite.movieOverview = movie.movieOverview;
-            favorite.movieYear = movie.movieYear;
-            favorite.movieRating = movie.movieRating;
-            favorite.movieVoteCount = movie.movieVoteCount;
-            favorite.moviePoster = movie.moviePoster;
-            favorite.save();
-            updateFavoriteButton(true, getView());
-            movie.favorite = true;
-            Toast.makeText(getActivity(), R.string.add_favorite_msg, Toast.LENGTH_LONG).show();
+            Intent detailIntent = new Intent(getActivity(), MovieDetailActivity.class)
+                    .putParcelableArrayListExtra(Intent.EXTRA_TEXT, movie)
+                    .putExtra("twoPane", false);
+            getActivity().startActivity(detailIntent);
         }
+
     }
 
 
     public class FetchVideos extends AsyncTask<String, Void, ArrayList<VideoItem>> {
 
-        private Context context;
-        private View rootView;
         private ProgressDialog dialog = new ProgressDialog(getActivity());
-
-
-        public FetchVideos(Context context, View rootView) {
-            this.context = context;
-            this.rootView = rootView;
-        }
-
 
         /** progress dialog to show user that the backup is processing. */
         /** application context. */
@@ -192,6 +199,7 @@ public class MovieDetailActivityFragment extends Fragment {
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
             String videosJsonStr = null;
+
 
             try {
 
@@ -216,7 +224,6 @@ public class MovieDetailActivityFragment extends Fragment {
                 InputStream streamFromTMDB = urlConnection.getInputStream();
                 StringBuilder buffer = new StringBuilder();
                 if (streamFromTMDB == null) {
-                    //errorMsg = "No data was received fom the server. Try again later.";
                     return null;
                 }
                 reader = new BufferedReader(new InputStreamReader(streamFromTMDB));
@@ -277,9 +284,6 @@ public class MovieDetailActivityFragment extends Fragment {
                     e.printStackTrace();
                 }
 
-                final VideoItem item = new VideoItem(site, name, key, type);
-
-
                 allVideos.add(i, new VideoItem(site, name, key, type));
             }
             getActivity().runOnUiThread(new Runnable() {
@@ -307,10 +311,7 @@ public class MovieDetailActivityFragment extends Fragment {
         if(videosArray.size() != 0) {
             getActivity().findViewById(R.id.trailer_not_available).setVisibility(View.GONE);
         }
-        else {
-            TextView trailer_message = (TextView) getActivity().findViewById(R.id.trailer_not_available);
-            trailer_message.setText(R.string.video_not_available);
-        }
+
         for(int i = 0; i < videosArray.size(); i++) {
             String name = videosArray.get(i).videoName;
             String key = videosArray.get(i).videoKey;
@@ -347,20 +348,15 @@ public class MovieDetailActivityFragment extends Fragment {
 
     public class FetchReviews extends AsyncTask<String, Void, ArrayList<ReviewItem>> {
 
-        private Context context;
-        private View rootView;
-        private ProgressDialog dialog = new ProgressDialog(getActivity());
+        private ProgressDialog reviewdialog = new ProgressDialog(getActivity());
 
-        public FetchReviews(Context context, View rootView) {
-            this.context = context;
-            this.rootView = rootView;
-        }
+        public FetchReviews() {}
 
 
         @Override
         protected void onPreExecute() {
-            this.dialog.setMessage(getResources().getString(R.string.loading_reviews_message));
-            this.dialog.show();
+            this.reviewdialog.setMessage(getResources().getString(R.string.loading_reviews_message));
+            this.reviewdialog.show();
         }
 
         @Override
@@ -395,7 +391,6 @@ public class MovieDetailActivityFragment extends Fragment {
                 InputStream streamFromTMDB = urlConnection.getInputStream();
                 StringBuilder buffer = new StringBuilder();
                 if (streamFromTMDB == null) {
-                    //errorMsg = "No data was received fom the server. Try again later.";
                     return null;
                 }
                 reader = new BufferedReader(new InputStreamReader(streamFromTMDB));
@@ -406,7 +401,6 @@ public class MovieDetailActivityFragment extends Fragment {
                 }
 
                 if (buffer.length() == 0) {
-                    //errorMsg = "Buffer is empty";
                     return null;
                 }
 
@@ -467,8 +461,8 @@ public class MovieDetailActivityFragment extends Fragment {
         @Override
         protected void onPostExecute(ArrayList<ReviewItem> reviews) {
             super.onPostExecute(reviews);
-            if (dialog.isShowing()) {
-                dialog.dismiss();
+            if (reviewdialog.isShowing()) {
+                reviewdialog.dismiss();
             }
             if (savedScrollPosition != 0) {
                 final ScrollView detailView = (ScrollView) getActivity().findViewById(R.id.detailScrollview);
@@ -481,9 +475,6 @@ public class MovieDetailActivityFragment extends Fragment {
 
         if (reviewsList.size() != 0) {
             getActivity().findViewById(R.id.no_review).setVisibility(View.GONE);
-        } else {
-            TextView review_message = (TextView) getActivity().findViewById(R.id.no_review);
-            review_message.setText(R.string.no_review);
         }
 
         for(int i = 0; i < reviewsList.size(); i++) {
@@ -513,9 +504,13 @@ public class MovieDetailActivityFragment extends Fragment {
         Picasso.with(getActivity()).load(movie.moviePoster).into(posterImageView);
         titleTextView.setText(movie.movieTitle);
         if(movie.movieYear != 0) {
-            yearTextView.setText(Integer.toString(movie.movieYear));
+            yearTextView.setText(String
+                    .format(getResources().getString(R.string.movieYearDetail),
+                            movie.movieYear));
         }
-        voteCountTextView.setText("(" + Integer.toString(movie.movieVoteCount) + ")");
+        voteCountTextView.setText(String
+                .format(getResources().getString(R.string.vote_count_if_any),
+                        movie.movieVoteCount));
         if(movie.movieOverview != null) {
             overviewTextView.setText(movie.movieOverview);  //allows to display value in
                                                             // strings.xml (not displaying "null")
@@ -524,7 +519,7 @@ public class MovieDetailActivityFragment extends Fragment {
         ratingBar.setRating(movie.movieRating / 2); //converting a 10-based value to 5-star rating
     }
 
-    public void updateFavoriteButton(boolean favorite, View rootView) {
+    public static void updateFavoriteButton(boolean favorite, View rootView) {
         Button favButton = (Button) rootView.findViewById(R.id.button_Favorite);
         movie.favorite = favorite;
         if(favorite)
@@ -541,5 +536,13 @@ public class MovieDetailActivityFragment extends Fragment {
                 .from(DB_Favorite_Movies.class)
                 .where("tmdb_ID = ?", id)
                 .executeSingle();
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager)
+                getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo active = connectivityManager.getActiveNetworkInfo();
+        return active != null && active.isConnected();
     }
 }

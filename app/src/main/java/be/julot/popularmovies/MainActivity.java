@@ -15,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.GridView;
+import android.widget.Toast;
 
 import com.activeandroid.query.Select;
 
@@ -37,10 +38,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
+import de.greenrobot.event.EventBus;
+
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String DETAILFRAGMENT_TAG = "DFTAG";
     public final String API_KEY = "d02afd0919d8034eee26567d22343d36";
     public MoviePosterItemAdapter moviePosterAdapter;
     public String sortby_pref;
@@ -90,6 +92,27 @@ public class MainActivity extends AppCompatActivity {
         // was stopped but not destroyed (e.g. by pushing home button or launching another app),
         // and then restarted.
         if(updateNecessary) {
+            updatePosterGrid(sortby_pref);
+        }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        EventBus.getDefault().unregister(this);
+        super.onStop();
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    public void onEvent(FavoriteUpdate event){
+        Toast.makeText(this, sortby_pref, Toast.LENGTH_SHORT).show();
+        if(mTwoPane && Objects.equals(sortby_pref, "favorites")){
+            updateNecessary = event.update;
             updatePosterGrid(sortby_pref);
         }
     }
@@ -252,7 +275,7 @@ public class MainActivity extends AppCompatActivity {
                     .from(DB_Favorite_Movies.class)
                     .execute();
 
-            ArrayList<MoviePosterItem> favorites = new ArrayList<MoviePosterItem>();
+            ArrayList<MoviePosterItem> favorites = new ArrayList<>();
 
             if(favList.size() == 0) {
                 favorites = null;
