@@ -2,12 +2,11 @@ package be.julot.popularmovies;
 
 
 
-// I made the choice to only record locally the movie ID on TMDB because:
-// 1) I need anyway to make an API call to get the right rating and number of votes (changes daily
-// and can't reasonably be locally stored)
-// 2) I don't want to locally store the movie poster image, hence I need to make an API call anyway
-// for this too
-    //So, my favorite list is locally stored, but not movie details.
+// We record movie details, but not the poster image (this is kept in cache though, so if you lose
+// Internet connection after displaying the movie grid, you will see the poster in movie details).
+// We do not record all reviews and trailers in local db, but the movie detail activity still works
+// and displays movie details even when no Internet connection is available and reviews/videos cannot
+// be retrieved.
 
 import com.activeandroid.Model;
 import com.activeandroid.annotation.Column;

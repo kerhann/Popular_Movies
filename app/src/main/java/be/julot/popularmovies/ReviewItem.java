@@ -4,7 +4,6 @@ package be.julot.popularmovies;
 import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -62,6 +61,12 @@ public class ReviewItem extends ArrayList<Parcelable> implements Parcelable {
 
         TextView reviewTextView = (TextView) reviewItemView.findViewById(R.id.review);
         reviewTextView.setText(review);
+
+        //I chose to populate a LinearLayout (vertical) with one LinearLayout (horizontal)
+        // for each video item. I had first chosen to use a ListView with fixed height and no
+        // scrolling, but I read that it is not good practice to have a scrollview (ListView)
+        // nested in another scrollview (ScrollView). Much better to generate views on the fly with
+        // such a small number of items.
         linearReviews.addView(reviewItemView);
 
     }

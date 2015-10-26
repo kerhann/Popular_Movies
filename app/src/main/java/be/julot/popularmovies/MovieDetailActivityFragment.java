@@ -1,7 +1,6 @@
 package be.julot.popularmovies;
 
 import android.app.ProgressDialog;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -15,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -60,26 +58,33 @@ public class MovieDetailActivityFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.fragment_movie_detail, container, false);
-        //Trying Butter Knife
+
+        //I decided (arbitrarily though!) to try Butter Knife in this activity!
         ButterKnife.bind(this, rootView);
 
+        //Get the intent extras
         Intent intent = getActivity().getIntent();
         movie = (MoviePosterItem) intent.getParcelableArrayListExtra(Intent.EXTRA_TEXT);
+        //Are we in dual pane (default is false)?
         twoPane = intent.getBooleanExtra("twoPane", false);
 
+        //If there is no movie in the intent extras and we are in the detail activity...
         if (movie == null) {
             Bundle bundle = getArguments();
+            //... it means that either we are in dual pane and a movie was selected...
             if(bundle != null) {
                 movie = bundle.getParcelable(MOVIE_TAG);
                 twoPane = bundle.getBoolean("twoPane", false);
             }
+            //... or no movie was selected and we stop here.
             else {
                 return rootView;
             }
         }
 
+        //Since we have a movie at this stage, let's populate our detail view
         fillMovieFields(movie, rootView);
-
+        //and check if the movie is in favorites + update the favorite button accordingly.
         DB_Favorite_Movies favorite = getFavorite(movie.tmdb_ID);
         updateFavoriteButton(favorite != null, rootView);
 
@@ -89,9 +94,11 @@ public class MovieDetailActivityFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle byeState) {
         super.onSaveInstanceState(byeState);
+        //We should save the scroll position in this fragment if screen rotates
         ScrollView detailView = (ScrollView) getActivity().findViewById(R.id.detailScrollview);
         int scrollPositionToSave = detailView.getScrollY();
         byeState.putInt("scrollPosition", scrollPositionToSave);
+        //But also save the list of videos and of reviews to avoid having to re-make API calls
         byeState.putParcelableArrayList("allVideos", allVideos);
         byeState.putParcelableArrayList("allReviews", allReviews);
     }
@@ -99,27 +106,43 @@ public class MovieDetailActivityFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
         if (savedInstanceState != null) {
+            //Get the saved scroll position (by default => 0)
             savedScrollPosition = savedInstanceState.getInt("scrollPosition", 0);
         }
 
-        //Finally, get the videos & trailers
+        //GET VIDEOS AND REVIEWS
+        //
+        //1) If we do not have them through saved instance
         if(savedInstanceState == null || !savedInstanceState.containsKey("allVideos")) {
+            //Check the availability of Internet connection (indeed, connection may have been OK
+            //when displaying the movie grid and may then have been lost when clicking a poster to
+            //see a movie's details).
+            //If connection available, grab the videos with async API call.
             if(isNetworkAvailable()){
                 FetchVideos getVideos = new FetchVideos();
                 getVideos.execute(String.valueOf(movie.tmdb_ID), "en");
-            } else {
+            }
+            //If no connection available, we do not launch a BugReporting activity (since movie
+            // details are nevertheless available and could be displayed), but we propose a button
+            // to relaunch the activity and try again to grab videos.
+            //In order to test this, launch the app with Internet connection working, then lose the
+            //connection and try to see a movie's details.
+            else {
                 TextView trailer_message = (TextView) getActivity().findViewById(R.id.trailer_not_available);
                 Button no_video_button = (Button) getActivity().findViewById(R.id.no_video_button);
                 trailer_message.setText(R.string.connection_problem);
                 no_video_button.setVisibility(View.VISIBLE);
             }
         }
+        // 2) else we have the videos in saved instance. Let's just populate the view with them.
         else {
             allVideos = savedInstanceState.getParcelableArrayList("allVideos");
             populateVideoList(allVideos);
         }
 
+        //Exactly the same logic for reviews.
         if(savedInstanceState == null || !savedInstanceState.containsKey("allReviews")) {
             if(isNetworkAvailable()){
                 FetchReviews getReviews = new FetchReviews();
@@ -137,8 +160,12 @@ public class MovieDetailActivityFragment extends Fragment {
             scrollOnView((ScrollView) getActivity().findViewById(R.id.detailScrollview), savedScrollPosition);
         }
 
+        //--END OF GETTING VIDEOS AND REVIEWS--
+
     }
 
+
+    //Smooth scroll method when restoring saved instance
     private void scrollOnView(final ScrollView scrollView, final int scrollPosition){
         scrollView.post(new Runnable() {
             public void run() {
@@ -147,12 +174,14 @@ public class MovieDetailActivityFragment extends Fragment {
         });
     }
 
+    //If the favorite button is clicked, update the favorite list (methods in new class)
     @OnClick(R.id.button_Favorite)
     public void updateFavorites(){
         FavoriteUpdate update = new FavoriteUpdate(true);
         update.Proceed(movie, getView(), getActivity());
     }
 
+    //If there is no Internet connection, make the "Try again" button refresh the activity/fragment
     @OnClick({R.id.no_review_button, R.id.no_video_button})
     public void refreshDetailActivity() {
 
@@ -178,13 +207,13 @@ public class MovieDetailActivityFragment extends Fragment {
 
     }
 
-
+    // API call for retrieving videos (I won't comment it since it is very similar to FetchPosterTask
+    // in MainActivity.
     public class FetchVideos extends AsyncTask<String, Void, ArrayList<VideoItem>> {
 
         private ProgressDialog dialog = new ProgressDialog(getActivity());
 
-        /** progress dialog to show user that the backup is processing. */
-        /** application context. */
+        // progress dialog to show user that the backup is processing.
         @Override
         protected void onPreExecute() {
             this.dialog.setMessage(getResources().getString(R.string.loading_videos_message));
@@ -286,6 +315,8 @@ public class MovieDetailActivityFragment extends Fragment {
 
                 allVideos.add(i, new VideoItem(site, name, key, type));
             }
+
+            //Any update on the UI must be done in the main UI thread, not in async
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -308,6 +339,7 @@ public class MovieDetailActivityFragment extends Fragment {
     }
 
     private void populateVideoList(ArrayList<VideoItem> videosArray) {
+        //If we have results, hide the "no video" message
         if(videosArray.size() != 0) {
             getActivity().findViewById(R.id.trailer_not_available).setVisibility(View.GONE);
         }
@@ -320,32 +352,17 @@ public class MovieDetailActivityFragment extends Fragment {
 
             final VideoItem item = new VideoItem(site, name, key, type);
 
-                    LinearLayout linearVideos = (LinearLayout) getActivity().findViewById(R.id.linearVideo);
-                    View videoItemView = LayoutInflater.from(getActivity()).inflate(R.layout.video_item, null);
-
-                    TextView videoNameTextView = (TextView) videoItemView.findViewById(R.id.video_name);
-                    videoNameTextView.setText(item.videoName);
-
-                    LinearLayout wholeCellVideo = (LinearLayout) videoItemView.findViewById(R.id.wholeCellVideo);
-
-                    wholeCellVideo.setOnClickListener(new View.OnClickListener() {
-                                                          @Override
-                                                          public void onClick(View v) {
-                                                              try {
-                                                                  Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + item.videoKey));
-                                                                  getActivity().startActivity(intent);
-                                                              } catch (ActivityNotFoundException exception) {
-                                                                  Intent intent = new Intent(Intent.ACTION_VIEW,
-                                                                          Uri.parse("http://www.youtube.com/watch?v=" + item.videoKey));
-                                                                  getActivity().startActivity(intent);
-                                                              }
-                                                          }
-                                                      }
-                    );
-                    linearVideos.addView(videoItemView);
+            //Any update on the UI must be done in the main UI thread, not in async
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    item.populateView(getView(), getActivity());
+                }
+            });
         }
     }
 
+    //Not commenting this method (similar to above and to FetchPosterTask in MainActivity)
     public class FetchReviews extends AsyncTask<String, Void, ArrayList<ReviewItem>> {
 
         private ProgressDialog reviewdialog = new ProgressDialog(getActivity());
@@ -418,7 +435,6 @@ public class MovieDetailActivityFragment extends Fragment {
                         reader.close();
                     } catch (IOException e) {
                         e.printStackTrace();
-                        //errorMsg = "Reader could not be closed.";
                     }
                 }
             }
@@ -448,6 +464,7 @@ public class MovieDetailActivityFragment extends Fragment {
                 allReviews.add(i, new ReviewItem(reviewer, review));
             }
 
+            //Any update on the UI must be done in the main UI thread, not in async
             getActivity().runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {
@@ -464,6 +481,8 @@ public class MovieDetailActivityFragment extends Fragment {
             if (reviewdialog.isShowing()) {
                 reviewdialog.dismiss();
             }
+            //Since this is the last API call (it comes last in the queue), we can use the onPostExecute
+            //to make the final scroll if needed.
             if (savedScrollPosition != 0) {
                 final ScrollView detailView = (ScrollView) getActivity().findViewById(R.id.detailScrollview);
                 scrollOnView(detailView, savedScrollPosition);

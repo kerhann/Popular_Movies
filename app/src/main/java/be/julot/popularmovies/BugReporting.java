@@ -9,6 +9,10 @@ import android.widget.Toast;
 
 import java.util.Date;
 
+//This activity creates a Bug Report (namely if Internet connection is lost) and proposes to refresh
+//the main activity or report a bug (in a basic way, as it sends an email and IOMessage
+// to a hardcoded email address!).
+
 public class BugReporting extends ActionBarActivity {
 
     String messageTitle;
@@ -32,9 +36,11 @@ public class BugReporting extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bug_reporting);
 
+        //Get the error message from the extras
         Intent intent = this.getIntent();
         IOMessage = intent.getStringExtra("IOMessage");
 
+        //The "Try again" button tries to re-launch the main activity
         View tryAgainButton = this.findViewById(R.id.button_try);
         tryAgainButton.setOnClickListener(new View.OnClickListener() {
 
@@ -46,7 +52,7 @@ public class BugReporting extends ActionBarActivity {
 
         });
 
-
+        //The reporting button sends an email with the IOMessage (very basic, was just for the test)
         final Date now = new Date();
         View bugReportButton = this.findViewById(R.id.button_bug);
         bugReportButton.setOnClickListener(new View.OnClickListener() {

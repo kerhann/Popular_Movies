@@ -5,8 +5,6 @@ import android.support.v7.app.AppCompatActivity;
 
 public class MovieDetailActivity extends AppCompatActivity {
 
-    public MoviePosterItem movie;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

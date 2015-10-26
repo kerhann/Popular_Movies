@@ -15,7 +15,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.GridView;
-import android.widget.Toast;
 
 import com.activeandroid.query.Select;
 
@@ -49,11 +48,7 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<MoviePosterItem> moviePosterItems = new ArrayList<>();
     private boolean no_movie_selected = false;
     private boolean mTwoPane;
-
-
     //I chose to define a boolean to know if update of the grid is necessary. In doubt, it is "yes".
-    //Other factors may in the future also change this boolean, such as the fact that the grid
-    //has not been refreshed for x hours, etc.
     public Boolean updateNecessary = true;
 
     @Override
@@ -62,16 +57,20 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-
-        if (savedInstanceState != null && savedInstanceState.containsKey("moviePosterItems") && savedInstanceState.containsKey("no_movie_selected")) {
+        //No need to update the grid if saved instance exists & has our movies.
+        // We also check whether, in case of dual pane, a movie was selected
+        // before the instance state was saved... (to be followed at next comment)...
+        if (savedInstanceState != null && savedInstanceState.containsKey("moviePosterItems")
+                && savedInstanceState.containsKey("no_movie_selected")) {
             moviePosterItems = savedInstanceState.getParcelableArrayList("moviePosterItems");
             no_movie_selected = savedInstanceState.getBoolean("no_movie_selected");
             updateNecessary = false;
         }
 
-
+        //Are we in dual pane or not?
         if (findViewById(R.id.movie_detail_container) != null) {
             mTwoPane = true;
+            // We show the "no movie selected" message if no movie has been selected
             if (savedInstanceState == null || no_movie_selected) {
                 this.findViewById(R.id.no_movie_selected).setVisibility(View.VISIBLE);
                 no_movie_selected = true;
@@ -80,17 +79,16 @@ public class MainActivity extends AppCompatActivity {
             mTwoPane = false;
         }
 
+        //Creating / binding the adapter
         moviePosterAdapter = new MoviePosterItemAdapter(this, moviePosterItems, mTwoPane);
         GridView posterGrid = (GridView) findViewById(R.id.movie_grid);
         posterGrid.setAdapter(moviePosterAdapter);
 
+        //Retrieving the "sort" setting
         SharedPreferences userPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         sortby_pref = userPrefs.getString(getString(R.string.pref_key_sortby), getString(R.string.pref_key_default_sortby));
 
-        //I have moved the following lines from the onStart() method to here. Within the onStart()
-        //method, they were working great when screen was rotated, but not when the activity
-        // was stopped but not destroyed (e.g. by pushing home button or launching another app),
-        // and then restarted.
+        //If the grid needs to be updated, we do it.
         if(updateNecessary) {
             updatePosterGrid(sortby_pref);
         }
@@ -99,6 +97,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
+        //The following allows us to monitor whether a movie was added or removed from the
+        // favorite collection...
         EventBus.getDefault().register(this);
     }
 
@@ -108,9 +108,10 @@ public class MainActivity extends AppCompatActivity {
         super.onStop();
     }
 
+    //... and if a movie was added or removed from the favorite collection, we update the grid
+    // in a dual pane display where the grid is supposed to show favorites.
     @TargetApi(Build.VERSION_CODES.KITKAT)
     public void onEvent(FavoriteUpdate event){
-        Toast.makeText(this, sortby_pref, Toast.LENGTH_SHORT).show();
         if(mTwoPane && Objects.equals(sortby_pref, "favorites")){
             updateNecessary = event.update;
             updatePosterGrid(sortby_pref);
@@ -119,15 +120,18 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onSaveInstanceState(Bundle byeState) {
+        super.onSaveInstanceState(byeState);
+
+        //Save the grid items
         byeState.putParcelableArrayList("moviePosterItems", moviePosterItems);
+        //But also save whether any movie has already been clicked (in dual pane view), in order
+        //to later know whether the "Please select a movie" message should be shown or not.
         if(mTwoPane) {
             if(this.findViewById(R.id.no_movie_selected).getVisibility() == View.GONE) {
                 no_movie_selected = false;
             }
         }
-
         byeState.putBoolean("no_movie_selected", no_movie_selected);
-        super.onSaveInstanceState(byeState);
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -135,7 +139,8 @@ public class MainActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
         //The following lines are necessary if the user changes its preference (changes the sorting
-        //criteria) and then comes back to this activity with the back button.
+        //criteria) and then comes back to this activity with the back button. In such a case,
+        //we need to update the grid.
         SharedPreferences userPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         String saved_sortby_pref = userPrefs.getString(getString(R.string.pref_key_sortby), getString(R.string.pref_key_default_sortby));
         if(!Objects.equals(sortby_pref, saved_sortby_pref)) {
@@ -170,30 +175,26 @@ public class MainActivity extends AppCompatActivity {
 
     public class FetchPostersTask extends AsyncTask<String, Void, ArrayList<MoviePosterItem>> {
 
-        //private final String LOG_TAG = FetchPostersTask.class.getSimpleName();
-        //private String errorMsg;
         private String IOMessage;
         private ProgressDialog dialog = new ProgressDialog(MainActivity.this);
 
-        /** progress dialog to show user that the backup is processing. */
-        /** application context. */
+        // progress dialog to show user that the backup is processing.
         @Override
         protected void onPreExecute() {
             this.dialog.setMessage(getResources().getString(R.string.loading_message));
             this.dialog.show();
         }
 
+        //Grabbing all movies' info
         @TargetApi(Build.VERSION_CODES.KITKAT)
         protected ArrayList<MoviePosterItem> doInBackground(String... params) {
 
             ArrayList<MoviePosterItem> finalMoviesDataForGrid = new ArrayList<>();
 
 
-
+            //If we need to retrieve favorites, get them locally
             if(Objects.equals(params[0], "favorites")){
-
                 finalMoviesDataForGrid = getFavorites();
-
             }
             else {
 
@@ -224,7 +225,6 @@ public class MainActivity extends AppCompatActivity {
                     InputStream streamFromTMDB = urlConnection.getInputStream();
                     StringBuilder buffer = new StringBuilder();
                     if (streamFromTMDB == null) {
-                        //errorMsg = "No data was received fom the server. Try again later.";
                         return null;
                     }
                     reader = new BufferedReader(new InputStreamReader(streamFromTMDB));
@@ -235,7 +235,6 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     if (buffer.length() == 0) {
-                        //errorMsg = "Buffer is empty";
                         return null;
                     }
 
@@ -254,7 +253,6 @@ public class MainActivity extends AppCompatActivity {
                             reader.close();
                         } catch (IOException e) {
                             e.printStackTrace();
-                            //errorMsg = "Reader could not be closed.";
                         }
                     }
                 }
@@ -269,6 +267,7 @@ public class MainActivity extends AppCompatActivity {
             return finalMoviesDataForGrid;
         }
 
+        //This method retrieves the favorite movies (and their details) in local db
         private ArrayList<MoviePosterItem> getFavorites() {
 
             List<DB_Favorite_Movies> favList = new Select()
@@ -299,6 +298,7 @@ public class MainActivity extends AppCompatActivity {
             return favorites;
         }
 
+        //Parsing JSON result to objects (MoviePosterItem)
         private ArrayList<MoviePosterItem> getMoviesDataFromJson(String moviesJsonStr) throws JSONException {
 
             JSONObject moviesJson;
@@ -340,21 +340,30 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(ArrayList<MoviePosterItem> moviePosters) {
             super.onPostExecute(moviePosters);
+
+            //By default, we don't want the "no favorite" message shown
             MainActivity.this.findViewById(R.id.no_favorites).setVisibility(View.GONE);
 
+            //Dismiss loading dialog
             if (dialog.isShowing()) {
                 dialog.dismiss();
             }
+            //If there are results, we update the adapter
             if (moviePosters != null) {
                 moviePosterAdapter.clear();
                 moviePosterAdapter.addAll(moviePosters);
                 moviePosterItems = moviePosters;
             }
             else {
+                //If no results...
                 moviePosterAdapter.clear();
+                //... and if favorites are wanted, then show the "no favorite" message
                 if(Objects.equals(sortby_pref, "favorites")) {
                     MainActivity.this.findViewById(R.id.no_favorites).setVisibility(View.VISIBLE);
                 } else {
+                    //In this scenario, we haven't been able to grab anything from TMDB, this is
+                    //not normal and should be reported as a bug or a connection problem.
+                    //We use the BugReporting activity, to which we putExtra the IOMessage.
                     Intent bugReportingIntent = new Intent(MainActivity.this, BugReporting.class)
                             .putExtra("IOMessage", IOMessage);
                     MainActivity.this.startActivity(bugReportingIntent);
